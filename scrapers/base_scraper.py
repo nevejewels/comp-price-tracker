@@ -6,5 +6,5 @@ class BaseScraper(ABC):
         self.logger = logger
 
     @abstractmethod
-    def scrape(self, url: str) -> dict:
+    def scrape(self):
         pass

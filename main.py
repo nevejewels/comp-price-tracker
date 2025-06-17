@@ -1,16 +1,14 @@
 from helpers.webdriver_manager import get_firefox_driver
-# from sites.site_77diamonds import scrape_77diamonds
-# from sites.site_brilliantearth import scrape_brilliantearth
-# from sites.site_diamondsfactory import scrape_diamondsfactory
-
+from scrapers.brilliantearth import BrilliantearthScraper
+from utils.logger import setup_logger  # Make sure this path is correct
 
 def main():
     driver = get_firefox_driver(headless=False)
+    logger = setup_logger("brilliant_scraper")
 
-    data = []
     try:
-        url = "https://www.diamondsfactory.co.uk/design/white-gold-round-diamond-engagement-ring-clrn34901?search=clrn349_01"
-        driver.get(url)
+        scraper = BrilliantearthScraper(driver, logger)
+        scraper.scrape()  # Now scrape is called correctly
     finally:
         driver.quit()
 
