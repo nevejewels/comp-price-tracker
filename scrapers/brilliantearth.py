@@ -5,11 +5,16 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from scrapers.brilliantearth_helper import (
     click_diamond_origin,
+    click_first_select_diamond,
     click_style_option,
     click_metal_option,
     get_title,
     accept_cookies,
-    click_diamond_shape
+    click_diamond_shape,
+    select_clarity,
+    select_color,
+    select_cut,
+    set_carat_range
 )
 import time
 
@@ -60,7 +65,7 @@ class BrilliantearthScraper(BaseScraper):
                 self.logger.error(f"Failed to click 'CHOOSE THIS SETTING' button: {e}")
             time.sleep(5)
 
-            diamond_shape = "Round"
+            # diamond_shape = "Round"
             # diamond_shape = "Oval"
             # diamond_shape = "Emerald"
             # diamond_shape = "Cushion"
@@ -68,5 +73,40 @@ class BrilliantearthScraper(BaseScraper):
             # diamond_shape = "Radiant"
             # diamond_shape = "Princess"
             # diamond_shape = "Asscher"
-            click_diamond_shape(self.driver, self.logger, diamond_shape)
-            time.sleep(10)
+            # click_diamond_shape(self.driver, self.logger, diamond_shape)
+            # time.sleep(10)
+
+            # time.sleep(5)
+            # set_carat_range(self.driver, self.logger, "1.0", "1.0")
+            # print("Set carat range to 1.0 - 1.0")
+            # time.sleep(10)
+
+            # time.sleep(10)
+            # # cut_values = "Fair"
+            # # cut_values = "Good"
+            # # cut_values = "Very Good"
+            # # cut_values = "Ideal"
+            # cut_values = "Super Ideal"
+            # select_cut(self.driver, self.logger, cut_values)
+            # time.sleep(10)
+
+
+            # time.sleep(10)
+            # color_val = "E"
+            # select_color(self.driver, self.logger, color_val)
+            # time.sleep(10)
+
+            time.sleep(6)
+            clarity_val = "SI2"
+            # clarity_val = "SI1"
+            # clarity_val = "VS2"
+            # clarity_val = "VS1"
+            # clarity_val = "VVS2"
+            # clarity_val = "VVS1"
+            # clarity_val = "IF"
+            # clarity_val = "FL"
+            select_clarity(self.driver, self.logger, clarity_val)
+            time.sleep(5)
+
+            click_first_select_diamond(self.driver, self.logger)
+            time.sleep(15)
