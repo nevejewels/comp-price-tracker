@@ -17,7 +17,10 @@ def accept_cookies(driver):
 
 def get_title(driver, logger):
     try:
-        rightside_parent = driver.find_element(By.CLASS_NAME, "js-pdp-sidebar-inner")
+        # rightside_parent = driver.find_element(By.CLASS_NAME, "js-pdp-sidebar-inner")
+        rightside_parent = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "js-pdp-sidebar-inner"))
+        )
         title_element = rightside_parent.find_element(By.CSS_SELECTOR, "h1.heading")
         title = title_element.text.strip()
         logger.info(f"Title extracted: {title}")
@@ -28,7 +31,10 @@ def get_title(driver, logger):
 
 def click_metal_option(driver, logger, metal_to_select):
     try:
-        metal_elements = driver.find_elements(By.CSS_SELECTOR, "a.metal-around")
+        # metal_elements = driver.find_elements(By.CSS_SELECTOR, "a.metal-around")
+        metal_elements = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "a.metal-around"))
+        )
         for metal in metal_elements:
             try:
                 span = metal.find_element(By.CSS_SELECTOR, "span.tm-sr-only")
@@ -58,7 +64,7 @@ def click_style_option(driver, logger, style_name):
     except Exception as e:
         logger.error(f"Error clicking style option: {e}")
 
-def click_diamond_shape(driver, logger, shape_name):
+def click_stone_shape(driver, logger, shape_name):
     try:
         shape_list = driver.find_elements(By.CSS_SELECTOR, 'ul#js_shape > li')
         logger.info(f"Found {len(shape_list)} shape options.")
@@ -76,7 +82,7 @@ def click_diamond_shape(driver, logger, shape_name):
     except Exception as e:
         logger.error(f"❌ Error clicking diamond shape '{shape_name}': {e}")
 
-def click_diamond_origin(driver, logger, origin_type):
+def click_stonetype_diamond(driver, logger, origin_type):
     origin_type = origin_type.strip().lower()
     
     try:
@@ -301,23 +307,71 @@ def select_clarity(driver, logger, clarity_value):
 #         logger.error(f"❌ Failed to click on the first 'Select Diamond' button: {e}")
 
 def click_first_select_diamond(driver, logger):
+
+    first_button = driver.find_elements(By.XPATH, "//a[contains(text(), 'Select Diamond')]")[0]
+    time.sleep(5)
+    first_button.click()
+    logger.info("✅ Clicked on the first 'Select Diamond' button.")
+
+    # try:
+    #     # Find all <a> tags
+    #     anchor_tags = driver.find_elements(By.TAG_NAME, "a")
+    #     print(f"Found {len(anchor_tags)} anchor tags on the page.")
+
+    #     # Filter to anchors with exact text "Select Diamond"
+    #     select_links = [a for a in anchor_tags if a.text.strip() == "Select Diamond"]
+    #     print(f"Found {len(select_links)} 'Select Diamond' links.")
+
+    #     if not select_links:
+    #         logger.error("❌ No 'Select Diamond' links found on the page.")
+    #         return
+
+    #     # Scroll to and click the first one
+    #     driver.execute_script("arguments[0].scrollIntoView(true);", select_links[0])
+    #     time.sleep(1)
+    #     print("done scrolling to the first 'Select Diamond' link.")
+    #     select_links[0].click()
+
+    #     logger.info("✅ Clicked on the first 'Select Diamond' link.")
+    # except Exception as e:
+    #     logger.error(f"❌ Failed to click 'Select Diamond': {e}")
+
+def get_product_details(driver, logger):
     try:
-        # Find all <a> tags
-        anchor_tags = driver.find_elements(By.TAG_NAME, "a")
-        print(f"Found {len(anchor_tags)} anchor tags on the page.")
-
-        # Filter to anchors with exact text "Select Diamond"
-        select_links = [a for a in anchor_tags if a.text.strip() == "Select Diamond"]
-        print(f"Found {len(select_links)} 'Select Diamond' links.")
-
-        if not select_links:
-            logger.error("❌ No 'Select Diamond' links found on the page.")
-            return
-
-        # Scroll to and click the first one
-        driver.execute_script("arguments[0].scrollIntoView(true);", select_links[0])
-        select_links[0].click()
-
-        logger.info("✅ Clicked on the first 'Select Diamond' link.")
-    except Exception as e:
-        logger.error(f"❌ Failed to click 'Select Diamond': {e}")
+        title = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//h1"))).text.strip()
+    except:
+        title = None
+    try:
+        price = driver.find_element(By.XPATH, "(//span[@pdpprice and @ge-data-converted-full-price])[1]").text.strip()
+    except:
+        price = None
+    try:
+        setting_title = driver.find_element(By.CLASS_NAME, "setting_h1").text.strip().replace('\n', ' ')
+    except:
+        setting_title = None
+    try:
+        setting_price = driver.find_element(By.ID, "setting-price").text.strip()
+    except:
+        setting_price = None
+    try:
+        diamond_title = driver.find_element(By.ID, "diamond_name").text.strip()
+    except:
+        diamond_title = None
+    try:
+        diamond_price = driver.find_element(By.XPATH, "//div[@id='diamond_name']/../../span").text.strip()
+    except:
+        diamond_price = None
+    logger.info(f"Title: {title}")
+    logger.info(f"Price: {price}")
+    logger.info(f"Setting Title: {setting_title}")
+    logger.info(f"Setting Price: {setting_price}")
+    logger.info(f"Diamond Title: {diamond_title}")
+    logger.info(f"Diamond Price: {diamond_price}")
+    return {
+        "title": title,
+        "price": price,
+        "setting_title": setting_title,
+        "setting_price": setting_price,
+        "diamond_title": diamond_title,
+        "diamond_price": diamond_price
+    }
