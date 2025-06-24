@@ -4,6 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 import time
+import re
 
 
 def accept_cookies(driver):
@@ -15,7 +16,7 @@ def accept_cookies(driver):
     except Exception:
         pass  # silent if cookie banner not found
 
-def get_title(driver, logger):
+def get_title_price(driver, logger):
     try:
         # rightside_parent = driver.find_element(By.CLASS_NAME, "js-pdp-sidebar-inner")
         rightside_parent = WebDriverWait(driver, 10).until(
@@ -24,7 +25,15 @@ def get_title(driver, logger):
         title_element = rightside_parent.find_element(By.CSS_SELECTOR, "h1.heading")
         title = title_element.text.strip()
         logger.info(f"Title extracted: {title}")
-        return title
+
+        price_element = rightside_parent.find_element(
+            By.CSS_SELECTOR, "span[ge-data-converted-full-price]"
+        )
+        raw_price = price_element.text.strip()
+        price = re.sub(r"[^\d.]", "", raw_price)
+        logger.info(f"Price extracted: {price}")
+
+        return title, price
     except Exception as e:
         logger.error(f"Error extracting title: {e}")
         return None
@@ -51,7 +60,10 @@ def click_metal_option(driver, logger, metal_to_select):
 
 def click_style_option(driver, logger, style_name):
     try:
-        style_options = driver.find_elements(By.CSS_SELECTOR, "a.center_stone_img")
+        # style_options = driver.find_elements(By.CSS_SELECTOR, "a.center_stone_img")
+        style_options = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "a.center_stone_img"))
+        )
         logger.info(f"Found {len(style_options)} style options.")
         for option in style_options:
             name = option.get_attribute("data-name").strip()
@@ -342,7 +354,8 @@ def get_product_details(driver, logger):
     except:
         title = None
     try:
-        price = driver.find_element(By.XPATH, "(//span[@pdpprice and @ge-data-converted-full-price])[1]").text.strip()
+        price_raw = driver.find_element(By.XPATH, "(//span[@pdpprice and @ge-data-converted-full-price])[1]").text.strip()
+        price = re.sub(r"[^\d.]", "", price_raw)
     except:
         price = None
     try:
@@ -350,7 +363,8 @@ def get_product_details(driver, logger):
     except:
         setting_title = None
     try:
-        setting_price = driver.find_element(By.ID, "setting-price").text.strip()
+        setting_price_raw = driver.find_element(By.ID, "setting-price").text.strip()
+        setting_price = re.sub(r"[^\d.]", "", setting_price_raw)
     except:
         setting_price = None
     try:
@@ -358,7 +372,8 @@ def get_product_details(driver, logger):
     except:
         diamond_title = None
     try:
-        diamond_price = driver.find_element(By.XPATH, "//div[@id='diamond_name']/../../span").text.strip()
+        diamond_price_raw = driver.find_element(By.XPATH, "//div[@id='diamond_name']/../../span").text.strip()
+        diamond_price = re.sub(r"[^\d.]", "", diamond_price_raw)
     except:
         diamond_price = None
     logger.info(f"Title: {title}")
