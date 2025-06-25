@@ -23,11 +23,12 @@ import time
 from pymongo import MongoClient
 client = MongoClient("mongodb://localhost:27017/")
 db = client["price_scraping"]
-collection = db["brilliantearth1"]
+collection = db["brilliantearth_25jun25"]
 
 class BrilliantearthScraper(BaseScraper):
 
     def scrape(self):
+        print("Starting Brilliant Earth Scraper...")
         self.driver.quit()
 
         # urls = ['https://www.brilliantearth.com/en-gb/1.4mm-Provence-Solitaire-Ring-Gold-BE1776-4345169/',
@@ -36,15 +37,50 @@ class BrilliantearthScraper(BaseScraper):
         # urls = ['https://www.brilliantearth.com/en-gb/rings/cyorings/purchase_review/?did=47345275&sid=4345169']
         # urls = ['https://www.brilliantearth.com/en-gb/rings/cyorings/purchase_review/?sid=4345169&did=46944384']
 
-        df01 = pd.read_excel('files/common_price_inputfile.xlsx')
-        print(df01.shape)
+        # df01 = pd.read_excel('files/common_price_inputfile.xlsx')
+        # print(df01.shape)
 
-        for index, row in df01.iterrows():
+
+        df_input = pd.read_excel('files/common_price_inputfile.xlsx')
+        self.logger.info(f"Total input rows: {len(df_input)}")
+
+        match_columns = [
+            "Website URL_be",
+            "Metal_be",
+            "Stone Type_be",
+            "Stone Shape_be",
+            "Stone Carat_be",
+            "Color_be",
+            "Clarity_be",
+            "Cut_be"
+        ]
+
+        # Fetch only match_columns from MongoDB
+        existing_docs = list(collection.find({}, {col: 1 for col in match_columns}))
+
+        if not existing_docs:
+            self.logger.info("No existing records found in MongoDB. Scraping all rows.")
+            df_to_scrape = df_input.copy()
+        else:
+            df_existing = pd.DataFrame(existing_docs)
+            self.logger.info(f"Already crawled rows in DB: {len(df_existing)}")
+
+            # Merge input with existing to find uncrawled ones
+            df_merged = pd.merge(df_input, df_existing, on=match_columns, how='left', indicator=True)
+            df_to_scrape = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
+
+        self.logger.info(f"Remaining rows to scrape: {len(df_to_scrape)}")
+
+
+        print(df_to_scrape.head())
+        print()
+
+        for index, row in df_to_scrape.iterrows():
             print("\n")
             row_data = row.to_dict()
             print("row_data:", row_data)
 
-            url = row_data.get('Website URL')
+            url = row_data.get('Website URL_be')
             metal = row_data.get('Metal_be')
             stone_type = row_data.get('Stone Type_be')
             stone_shape = row_data.get('Stone Shape_be')
@@ -66,6 +102,7 @@ class BrilliantearthScraper(BaseScraper):
         # for url in urls:
             driver = get_firefox_driver(headless=False)
             driver.get(url)
+            time.sleep(3)
 
             # Accept cookies if the prompt appears
             accept_cookies(driver)
