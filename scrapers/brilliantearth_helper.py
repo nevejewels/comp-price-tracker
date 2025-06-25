@@ -320,10 +320,15 @@ def select_clarity(driver, logger, clarity_value):
 
 def click_first_select_diamond(driver, logger):
 
-    first_button = driver.find_elements(By.XPATH, "//a[contains(text(), 'Select Diamond')]")[0]
-    time.sleep(5)
-    first_button.click()
-    logger.info("✅ Clicked on the first 'Select Diamond' button.")
+    first_button = driver.find_elements(By.XPATH, "//a[contains(text(), 'Select Diamond')]")
+    logger.info(f"✅ first_button count is {len(first_button)}")
+    if len(first_button) >=1:
+        time.sleep(1)
+        first_button[0].click()
+        logger.info("✅ Clicked on the first 'Select Diamond' button.")
+        return True
+    else:
+        return False
 
     # try:
     #     # Find all <a> tags

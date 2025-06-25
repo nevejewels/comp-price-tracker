@@ -160,18 +160,28 @@ class BrilliantearthScraper(BaseScraper):
             select_clarity(driver, self.logger, clarity_val)
             time.sleep(2)
 
-            click_first_select_diamond(driver, self.logger)
-            time.sleep(10)
+            result01 = click_first_select_diamond(driver, self.logger)
+            if result01:
+                time.sleep(10)
+                product_details = get_product_details(driver, self.logger)
+                initial_title = initial_title
+                metal_price = metal_price
+                title = product_details['title']
+                total_price = product_details['price']
+                setting_title = product_details['setting_title']
+                setting_price = product_details['setting_price']
+                diamond_title = product_details['diamond_title']
+                stone_price = product_details['diamond_price']
 
-            product_details = get_product_details(driver, self.logger)
-            initial_title = initial_title
-            metal_price = metal_price
-            title = product_details['title']
-            total_price = product_details['price']
-            setting_title = product_details['setting_title']
-            setting_price = product_details['setting_price']
-            diamond_title = product_details['diamond_title']
-            stone_price = product_details['diamond_price']
+            else:
+                initial_title = ""
+                metal_price = ""
+                title = ""
+                total_price = ""
+                setting_title = ""
+                setting_price = ""
+                diamond_title = ""
+                stone_price = ""
             print("initial_title:", initial_title)
             print("metal_price:", metal_price)
             print("title:", title)
@@ -183,17 +193,18 @@ class BrilliantearthScraper(BaseScraper):
 
             row_data.update({
                 "initial_title": initial_title,
-                "final_title": product_details.get('title'),
+                "final_title": title,
                 "metal_price": metal_price,
-                "stone_price": product_details.get('diamond_price'),
-                "final_price": product_details.get('price'),
-                "setting_title": product_details.get('setting_title'),
-                "setting_price": product_details.get('setting_price'),
-                "diamond_title": product_details.get('diamond_title'),
+                "stone_price": stone_price,
+                "final_price": total_price,
+                "setting_title": setting_title,
+                "setting_price": setting_price,
+                "diamond_title": diamond_title,
                 "scraped_at": time.strftime("%Y-%m-%d %H:%M:%S")
             })
 
             # Insert into MongoDB
+            row_data.pop('_id', None)
             collection.insert_one(row_data)
             self.logger.info(f"Inserted data into MongoDB for URL: {url}")
             self.logger.info(f"Scraping completed for URL: {url}")
