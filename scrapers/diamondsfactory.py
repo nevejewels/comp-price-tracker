@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from scrapers.diamondsfactory_helper import (
+    metal_diamond_price,
     metal_select,
     stone_type_select,
     stone_shape_select,
@@ -39,6 +40,7 @@ class DiamondsFactoryScraper(BaseScraper):
             stone_carat = row['Stone Carat_df']
             color = row['Color_df']
             clarity = row['Clarity_df']
+            cut = row['Cut_df']
 
             self.logger.info(f"Scraping URL: {url}")
             self.logger.info(f"Scraping Metal: {metal}")
@@ -47,6 +49,7 @@ class DiamondsFactoryScraper(BaseScraper):
             self.logger.info(f"Scraping Stone Carat: {stone_carat}")
             self.logger.info(f"Scraping Color: {color}")
             self.logger.info(f"Scraping Clarity: {clarity}")
+            self.logger.info(f"Scraping Cut: {cut}")
 
             driver = get_firefox_driver(headless=False)
             
@@ -84,7 +87,13 @@ class DiamondsFactoryScraper(BaseScraper):
             stone_clarity_select(driver, clarity)
             time.sleep(8)
 
-            stone_cut_select(driver, "Very Good")
+            stone_cut_select(driver, cut)
             time.sleep(8)
+
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight * 0.12);")
+            time.sleep(2)  # Let elements load after scroll
+
+            metal_price, diamond_price = metal_diamond_price(driver, self.logger)
+
 
             driver.quit()
