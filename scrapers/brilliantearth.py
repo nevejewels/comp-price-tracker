@@ -23,7 +23,7 @@ import time
 from pymongo import MongoClient
 client = MongoClient("mongodb://localhost:27017/")
 db = client["price_scraping"]
-collection = db["brilliantearth_25jun25"]
+collection = db["brilliantearth_26jun25"]
 
 class BrilliantearthScraper(BaseScraper):
 
@@ -41,18 +41,18 @@ class BrilliantearthScraper(BaseScraper):
         # print(df01.shape)
 
 
-        df_input = pd.read_excel('files/common_price_inputfile.xlsx')
+        df_input = pd.read_excel('files/diamond_combinations.xlsx')
         self.logger.info(f"Total input rows: {len(df_input)}")
 
         match_columns = [
-            "Website URL_be",
-            "Metal_be",
-            "Stone Type_be",
-            "Stone Shape_be",
-            "Stone Carat_be",
-            "Color_be",
-            "Clarity_be",
-            "Cut_be"
+            "product_url",
+            "metal",
+            "stone_type",
+            "stone_shape",
+            "stone_carat",
+            "color",
+            "clarity",
+            "cut"
         ]
 
         # Fetch only match_columns from MongoDB
@@ -80,14 +80,14 @@ class BrilliantearthScraper(BaseScraper):
             row_data = row.to_dict()
             print("row_data:", row_data)
 
-            url = row_data.get('Website URL_be')
-            metal = row_data.get('Metal_be')
-            stone_type = row_data.get('Stone Type_be')
-            stone_shape = row_data.get('Stone Shape_be')
-            stone_carat = row_data.get('Stone Carat_be')
-            color = row_data.get('Color_be')
-            clarity = row_data.get('Clarity_be')
-            cut = row_data.get('Cut_be')
+            url = row_data.get('product_url')
+            metal = row_data.get('metal')
+            stone_type = row_data.get('stone_type')
+            stone_shape = row_data.get('stone_shape')
+            stone_carat = row_data.get('stone_carat')
+            color = row_data.get('color')
+            clarity = row_data.get('clarity')
+            cut = row_data.get('cut')
 
             self.logger.info(f"Scraping URL: {url}")
             self.logger.info(f"Scraping Metal: {metal}")
@@ -192,15 +192,15 @@ class BrilliantearthScraper(BaseScraper):
             print("stone_price:", stone_price)
 
             row_data.update({
-                "initial_title": initial_title,
-                "final_title": title,
+                "product_title": initial_title,
                 "metal_price": metal_price,
                 "stone_price": stone_price,
                 "final_price": total_price,
+                "scraped_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "setting_title": setting_title,
                 "setting_price": setting_price,
                 "diamond_title": diamond_title,
-                "scraped_at": time.strftime("%Y-%m-%d %H:%M:%S")
+                "final_title": title
             })
 
             # Insert into MongoDB
