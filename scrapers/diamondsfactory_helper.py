@@ -185,6 +185,36 @@ def stone_cut_select(driver, cut_value):
     except Exception as e:
         print(f"Cut grade selection failed: {e}")
 
+def get_title(driver, logger):
+    try:
+        title_element = driver.find_element(By.CSS_SELECTOR, "div.product-name h1.prod_title")
+        title = title_element.text.strip()
+        logger.info("Product Title: %s", title)
+        return title
+    except Exception as e:
+        logger.error("Error: %s", e)
+        return None
+
+def get_price(driver, logger):
+    try:
+        strike_price = driver.find_element(By.CSS_SELECTOR, "span.black-strike-price").text.strip()
+    except:
+        strike_price = "N/A"
+    try:
+        final_price = driver.find_element(By.CSS_SELECTOR, "span.final_price").get_attribute("content")
+        final_price = f"£{final_price.strip()}" if final_price else "N/A"
+    except:
+        final_price = "N/A"
+    try:
+        rrp_price = driver.find_element(By.CSS_SELECTOR, "span.rrp.linethrough").text.strip()
+    except:
+        rrp_price = "N/A"
+    try:
+        you_save = driver.find_element(By.CSS_SELECTOR, "span.save").text.strip()
+    except:
+        you_save = "N/A"
+    return strike_price, final_price, rrp_price, you_save
+
 def metal_diamond_price(driver):
     # Wait until the parent container is present
     parent = WebDriverWait(driver, 10).until(
@@ -202,3 +232,48 @@ def metal_diamond_price(driver):
     print("Setting Price:", setting_price)
     print("Diamond Price:", diamond_price)
     return setting_price, diamond_price
+
+def time_taken_decorator(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Time taken for {func.__name__}: {elapsed_time:.2f} seconds")
+        return result
+    return wrapper
+
+@time_taken_decorator
+def extract_all_product_details(driver):
+    details = {}
+    try:
+        parent = driver.find_element(By.CLASS_NAME, "detailCol1")
+        print("Parent element found:", parent)
+        
+        # Get all <p> elements inside it
+        ps = parent.find_elements(By.TAG_NAME, "p")
+
+        for p in ps:
+            text = p.text.strip()
+            if ":" in text:
+                key, val = text.split(":", 1)
+                key = key.strip().rstrip(":")
+                val = val.strip()
+                if key and val:
+                    details[key] = val
+            else:
+                # for <b>Setting Height:</b><span><span>5.2 mm</span></span> pattern
+                try:
+                    b = p.find_element(By.TAG_NAME, "b")
+                    span = p.find_element(By.TAG_NAME, "span")
+                    key = b.text.strip().rstrip(":")
+                    val = span.text.strip()
+                    if key and val:
+                        details[key] = val
+                except:
+                    continue
+    except Exception as e:
+        print(f"❌ Error in detailCol1 extraction: {e}")
+    
+    return {"product_details": details}
+
