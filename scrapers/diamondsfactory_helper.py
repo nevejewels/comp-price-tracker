@@ -217,21 +217,24 @@ def get_price(driver, logger):
 
 def metal_diamond_price(driver):
     # Wait until the parent container is present
-    parent = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "setting-diamond-options"))
-    )
+    try:
+        parent = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "setting-diamond-options"))
+        )
 
-    # Get the setting price
-    setting_price_element = parent.find_element(By.ID, "metalPrice")
-    setting_price = setting_price_element.text.strip().replace("£", "")
+        # Get the setting price
+        setting_price_element = parent.find_element(By.ID, "metalPrice")
+        setting_price = setting_price_element.text.strip().replace("£", "")
 
-    # Get the diamond price
-    diamond_price_element = parent.find_element(By.ID, "stonePrice")
-    diamond_price = diamond_price_element.text.strip().replace("£", "")
+        # Get the diamond price
+        diamond_price_element = parent.find_element(By.ID, "stonePrice")
+        diamond_price = diamond_price_element.text.strip().replace("£", "")
 
-    print("Setting Price:", setting_price)
-    print("Diamond Price:", diamond_price)
-    return setting_price, diamond_price
+        print("Setting Price:", setting_price)
+        print("Diamond Price:", diamond_price)
+        return setting_price, diamond_price
+    except:
+        return None, None
 
 def time_taken_decorator(func):
     def wrapper(*args, **kwargs):

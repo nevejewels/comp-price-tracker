@@ -36,7 +36,7 @@ def get_title_price(driver, logger):
         return title, price
     except Exception as e:
         logger.error(f"Error extracting title: {e}")
-        return None
+        return None, None
 
 def click_metal_option(driver, logger, metal_to_select):
     try:

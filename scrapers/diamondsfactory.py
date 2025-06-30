@@ -23,14 +23,14 @@ from scrapers.diamondsfactory_helper import (
 from pymongo import MongoClient
 client = MongoClient("mongodb://localhost:27017/")
 db = client["price_scraping"]
-collection = db["diamondsfactory"]
+collection = db["diamondsfactory_30jun25"]
 
 class DiamondsFactoryScraper(BaseScraper):
 
     def scrape(self):
         self.driver.quit()
 
-        df_input = pd.read_excel('files/diamondsfactory_input.xlsx')
+        df_input = pd.read_excel('files/diamondsfactory/diamondsfactory_input.xlsx')
         self.logger.info(f"Total input rows: {len(df_input)}")
 
         match_columns = [
@@ -117,9 +117,9 @@ class DiamondsFactoryScraper(BaseScraper):
             stone_cut_select(driver, cut)
             time.sleep(5)
 
-            detail_json = extract_all_product_details(driver)
-            print(f"Detail JSON: {detail_json}")
-            time.sleep(1)
+            # detail_json = extract_all_product_details(driver)
+            # print(f"Detail JSON: {detail_json}")
+            # time.sleep(1)
 
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight * 0.13);")
             time.sleep(2)  # Let elements load after scroll
@@ -142,8 +142,8 @@ class DiamondsFactoryScraper(BaseScraper):
                 "scraped_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "strike_price": strike_price,
                 "rrp_price": rrp_price,
-                "you_save": you_save,
-                "detail_json": detail_json
+                "you_save": you_save
+                # "detail_json": detail_json
             })
 
             row_data.pop('_id', None)

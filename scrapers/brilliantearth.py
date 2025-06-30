@@ -23,7 +23,7 @@ import time
 from pymongo import MongoClient
 client = MongoClient("mongodb://localhost:27017/")
 db = client["price_scraping"]
-collection = db["brilliantearth_26jun25"]
+collection = db["brilliantearth1_30jun25"]
 
 class BrilliantearthScraper(BaseScraper):
 
@@ -41,7 +41,7 @@ class BrilliantearthScraper(BaseScraper):
         # print(df01.shape)
 
 
-        df_input = pd.read_excel('files/diamond_combinations.xlsx')
+        df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data.xlsx')
         self.logger.info(f"Total input rows: {len(df_input)}")
 
         match_columns = [
@@ -116,6 +116,7 @@ class BrilliantearthScraper(BaseScraper):
             time.sleep(8)
 
             initial_title, metal_price = get_title_price(driver, self.logger)
+            time.sleep(1)
 
             # style_name = "Classic" # "Hidden Halo"
             # click_style_option(driver, self.logger, style_name)
