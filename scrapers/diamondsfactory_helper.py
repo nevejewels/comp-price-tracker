@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -197,22 +198,23 @@ def get_title(driver, logger):
 
 def get_price(driver, logger):
     try:
-        strike_price = driver.find_element(By.CSS_SELECTOR, "span.black-strike-price").text.strip()
+        strike_price = driver.find_element(By.CSS_SELECTOR, "span.black-strike-price").text.strip().replace("£", "")
     except:
-        strike_price = "N/A"
+        strike_price = None
     try:
         final_price = driver.find_element(By.CSS_SELECTOR, "span.final_price").get_attribute("content")
-        final_price = f"£{final_price.strip()}" if final_price else "N/A"
+        # final_price = f"£{final_price.strip()}" if final_price else None
+        final_price = final_price.strip().replace("£", "") if final_price else None
     except:
-        final_price = "N/A"
+        final_price = None
     try:
-        rrp_price = driver.find_element(By.CSS_SELECTOR, "span.rrp.linethrough").text.strip()
+        rrp_price = driver.find_element(By.CSS_SELECTOR, "span.rrp.linethrough").text.strip().replace("£", "")
     except:
-        rrp_price = "N/A"
+        rrp_price = None
     try:
-        you_save = driver.find_element(By.CSS_SELECTOR, "span.save").text.strip()
+        you_save = driver.find_element(By.CSS_SELECTOR, "span.save").text.strip().replace("£", "")
     except:
-        you_save = "N/A"
+        you_save = None
     return strike_price, final_price, rrp_price, you_save
 
 def metal_diamond_price(driver):

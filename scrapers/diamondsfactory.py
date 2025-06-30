@@ -147,6 +147,9 @@ class DiamondsFactoryScraper(BaseScraper):
             })
 
             row_data.pop('_id', None)
+            for key, value in row_data.items():
+                if pd.isna(value):
+                    row_data[key] = None
             collection.insert_one(row_data)
             self.logger.info(f"Inserted data into MongoDB for URL: {url}")
 

@@ -23,7 +23,7 @@ import time
 from pymongo import MongoClient
 client = MongoClient("mongodb://localhost:27017/")
 db = client["price_scraping"]
-collection = db["brilliantearth1_30jun25"]
+collection = db["brilliantearth_30jun25"]
 
 class BrilliantearthScraper(BaseScraper):
 
@@ -206,6 +206,9 @@ class BrilliantearthScraper(BaseScraper):
 
             # Insert into MongoDB
             row_data.pop('_id', None)
+            for key, value in row_data.items():
+                if pd.isna(value):
+                    row_data[key] = None
             collection.insert_one(row_data)
             self.logger.info(f"Inserted data into MongoDB for URL: {url}")
             self.logger.info(f"Scraping completed for URL: {url}")
