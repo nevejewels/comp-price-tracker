@@ -20,10 +20,17 @@ from scrapers.brilliantearth_helper import (
     get_product_details
 )
 import time
-from pymongo import MongoClient
-client = MongoClient("mongodb://localhost:27017/")
-db = client["price_scraping"]
-collection = db["brilliantearth_30jun25"]
+
+import psycopg2
+pg_conn = psycopg2.connect(
+    host="178.79.182.27",
+    database="briqpay",
+    user="briqpay",
+    password="briqpay111"
+)
+pg_conn.autocommit = True
+pg_cursor = pg_conn.cursor()
+
 
 class BrilliantearthScraper(BaseScraper):
 
@@ -44,38 +51,38 @@ class BrilliantearthScraper(BaseScraper):
         df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data.xlsx')
         self.logger.info(f"Total input rows: {len(df_input)}")
 
-        match_columns = [
-            "product_url",
-            "metal",
-            "stone_type",
-            "stone_shape",
-            "stone_carat",
-            "color",
-            "clarity",
-            "cut"
-        ]
+        # match_columns = [
+        #     "product_url",
+        #     "metal",
+        #     "stone_type",
+        #     "stone_shape",
+        #     "stone_carat",
+        #     "color",
+        #     "clarity",
+        #     "cut"
+        # ]
 
-        # Fetch only match_columns from MongoDB
-        existing_docs = list(collection.find({}, {col: 1 for col in match_columns}))
+        # # Fetch only match_columns from MongoDB
+        # existing_docs = list(collection.find({}, {col: 1 for col in match_columns}))
 
-        if not existing_docs:
-            self.logger.info("No existing records found in MongoDB. Scraping all rows.")
-            df_to_scrape = df_input.copy()
-        else:
-            df_existing = pd.DataFrame(existing_docs)
-            self.logger.info(f"Already crawled rows in DB: {len(df_existing)}")
+        # if not existing_docs:
+        #     self.logger.info("No existing records found in MongoDB. Scraping all rows.")
+        #     df_to_scrape = df_input.copy()
+        # else:
+        #     df_existing = pd.DataFrame(existing_docs)
+        #     self.logger.info(f"Already crawled rows in DB: {len(df_existing)}")
 
-            # Merge input with existing to find uncrawled ones
-            df_merged = pd.merge(df_input, df_existing, on=match_columns, how='left', indicator=True)
-            df_to_scrape = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
+        #     # Merge input with existing to find uncrawled ones
+        #     df_merged = pd.merge(df_input, df_existing, on=match_columns, how='left', indicator=True)
+        #     df_to_scrape = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
 
-        self.logger.info(f"Remaining rows to scrape: {len(df_to_scrape)}")
+        # self.logger.info(f"Remaining rows to scrape: {len(df_to_scrape)}")
 
 
-        print(df_to_scrape.head())
-        print()
+        # print(df_to_scrape.head())
+        # print()
 
-        for index, row in df_to_scrape.iterrows():
+        for index, row in df_input.iterrows():
             print("\n")
             row_data = row.to_dict()
             print("row_data:", row_data)
@@ -115,9 +122,6 @@ class BrilliantearthScraper(BaseScraper):
             click_metal_option(driver, self.logger, metal_val)
             time.sleep(8)
 
-            initial_title, metal_price = get_title_price(driver, self.logger)
-            time.sleep(1)
-
             # style_name = "Classic" # "Hidden Halo"
             # click_style_option(driver, self.logger, style_name)
 
@@ -125,6 +129,23 @@ class BrilliantearthScraper(BaseScraper):
             stone_type_val = stone_type
             click_stonetype_diamond(driver, self.logger, stone_type_val)
             time.sleep(5)
+
+            initial_title, metal_price = get_title_price(driver, self.logger)
+            time.sleep(1)
+
+            try:
+                product_details = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, "//a[span[text()='Product Details']]"))
+                )
+                product_details.click()
+                print("**** Clicked Product Details successfully.")
+            except Exception as e:
+                print(f"❌ Could not click Product Details: {e}")
+            time.sleep(2)
+
+            # product_detail = driver.find_element(By.ID, "headingOne")
+
+
 
             try:
                 button = WebDriverWait(driver, 10).until(
@@ -167,7 +188,7 @@ class BrilliantearthScraper(BaseScraper):
                 product_details = get_product_details(driver, self.logger)
                 initial_title = initial_title
                 metal_price = metal_price
-                title = product_details['title']
+                additional_title = product_details['title']
                 total_price = product_details['price']
                 setting_title = product_details['setting_title']
                 setting_price = product_details['setting_price']
@@ -177,7 +198,7 @@ class BrilliantearthScraper(BaseScraper):
             else:
                 initial_title = ""
                 metal_price = ""
-                title = ""
+                additional_title = ""
                 total_price = ""
                 setting_title = ""
                 setting_price = ""
@@ -185,7 +206,7 @@ class BrilliantearthScraper(BaseScraper):
                 stone_price = ""
             print("initial_title:", initial_title)
             print("metal_price:", metal_price)
-            print("title:", title)
+            print("additional_title:", additional_title)
             print("total_price:", total_price)
             print("setting_title:", setting_title)
             print("setting_price:", setting_price)
@@ -197,20 +218,80 @@ class BrilliantearthScraper(BaseScraper):
                 "metal_price": metal_price,
                 "stone_price": stone_price,
                 "final_price": total_price,
-                "scraped_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "updated_date": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "setting_title": setting_title,
                 "setting_price": setting_price,
                 "diamond_title": diamond_title,
-                "final_title": title
+                "updated_date_t": time.strftime("%Y-%m-%d"),
+                "additional_title": additional_title
             })
 
-            # Insert into MongoDB
-            row_data.pop('_id', None)
+            # # Insert into MongoDB
+            # row_data.pop('_id', None)
+            # for key, value in row_data.items():
+            #     if pd.isna(value):
+            #         row_data[key] = None
+            # collection.insert_one(row_data)
+
             for key, value in row_data.items():
-                if pd.isna(value):
+                if value in ["", "N/A"]:
                     row_data[key] = None
-            collection.insert_one(row_data)
-            self.logger.info(f"Inserted data into MongoDB for URL: {url}")
+
+            print("row_data = ", row_data)
+
+            insert_query = """
+                INSERT INTO public.price_brilliantearth_scrape (
+                    website, product_url, category, sub_category, collection_no, variant_no,
+                    metal, stone_type, stone_shape, stone_carat, color, clarity, cut,
+                    product_title, metal_price, stone_price, final_price, updated_date,
+                    setting_title, setting_price, diamond_title, product_description,
+                    additional_attributes, metal_t, stone_type_t, stone_shape_t,
+                    clarity_t, cut_t, metal_price_e, stone_price_e, final_price_e,
+                    updated_date_t, additional_title
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+
+            values = [
+                row_data.get("website"),
+                row_data.get("product_url"),
+                row_data.get("category"),
+                row_data.get("sub_category"),
+                row_data.get("collection_no"),
+                row_data.get("variant_no"),
+                row_data.get("metal"),
+                row_data.get("stone_type"),
+                row_data.get("stone_shape"),
+                row_data.get("stone_carat"),
+                row_data.get("color"),
+                row_data.get("clarity"),
+                row_data.get("cut"),
+                row_data.get("product_title"),
+                row_data.get("metal_price"),
+                row_data.get("stone_price"),
+                row_data.get("final_price"),
+                row_data.get("updated_date"),
+                row_data.get("setting_title"),
+                row_data.get("setting_price"),
+                row_data.get("diamond_title"),
+                row_data.get("product_description"),
+                row_data.get("additional_attributes"),
+                row_data.get("metal_t"),
+                row_data.get("stone_type_t"),
+                row_data.get("stone_shape_t"),
+                row_data.get("clarity_t"),
+                row_data.get("cut_t"),
+                row_data.get("metal_price_e"),
+                row_data.get("stone_price_e"),
+                row_data.get("final_price_e"),
+                row_data.get("updated_date_t"),
+                row_data.get("additional_title")
+            ]
+
+            pg_cursor.execute(insert_query, values)
+
+
+            self.logger.info(f"Inserted data into PostgreSQL for URL: {url}")
             self.logger.info(f"Scraping completed for URL: {url}")
 
             driver.quit()
