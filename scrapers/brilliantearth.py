@@ -71,7 +71,7 @@ class BrilliantearthScraper(BaseScraper):
         df_remaining = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
         print(f"✅ Remaining rows to scrape: {len(df_remaining)}")
 
-        for index, row in df_input.iterrows():
+        for index, row in df_remaining.iterrows():
             print("\n")
             row_data = row.to_dict()
             print("row_data:", row_data)
