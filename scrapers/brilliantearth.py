@@ -1,3 +1,4 @@
+import datetime
 import sys
 import pandas as pd
 from helpers.webdriver_manager import get_firefox_driver
@@ -51,36 +52,24 @@ class BrilliantearthScraper(BaseScraper):
         df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data.xlsx')
         self.logger.info(f"Total input rows: {len(df_input)}")
 
-        # match_columns = [
-        #     "product_url",
-        #     "metal",
-        #     "stone_type",
-        #     "stone_shape",
-        #     "stone_carat",
-        #     "color",
-        #     "clarity",
-        #     "cut"
-        # ]
+        today_str = datetime.datetime.today().strftime('%Y-%m-%d')        
+        pg_cursor.execute("""
+            SELECT product_url, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
+            FROM public.price_brilliantearth_scrape
+            WHERE updated_date_t = %s
+        """, (today_str,))
+        rows = pg_cursor.fetchall()
+        print(f"🛑 Total rows already scraped today: {len(rows)}")
 
-        # # Fetch only match_columns from MongoDB
-        # existing_docs = list(collection.find({}, {col: 1 for col in match_columns}))
+        # 5. Convert DB result to DataFrame
+        columns = ["product_url", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
+        df_scraped = pd.DataFrame(rows, columns=columns)
+        print(f"🛑 Already scraped rows today: {len(df_scraped)}")
 
-        # if not existing_docs:
-        #     self.logger.info("No existing records found in MongoDB. Scraping all rows.")
-        #     df_to_scrape = df_input.copy()
-        # else:
-        #     df_existing = pd.DataFrame(existing_docs)
-        #     self.logger.info(f"Already crawled rows in DB: {len(df_existing)}")
-
-        #     # Merge input with existing to find uncrawled ones
-        #     df_merged = pd.merge(df_input, df_existing, on=match_columns, how='left', indicator=True)
-        #     df_to_scrape = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
-
-        # self.logger.info(f"Remaining rows to scrape: {len(df_to_scrape)}")
-
-
-        # print(df_to_scrape.head())
-        # print()
+        # 6. Merge to find remaining rows
+        df_merged = pd.merge(df_input, df_scraped, on=columns, how='left', indicator=True)
+        df_remaining = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
+        print(f"✅ Remaining rows to scrape: {len(df_remaining)}")
 
         for index, row in df_input.iterrows():
             print("\n")
@@ -143,9 +132,15 @@ class BrilliantearthScraper(BaseScraper):
                 print(f"❌ Could not click Product Details: {e}")
             time.sleep(2)
 
-            # product_detail = driver.find_element(By.ID, "headingOne")
 
-
+            wait = WebDriverWait(driver, 10)
+            container = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'tm-space-y-[30px]')]")))
+            driver.execute_script("arguments[0].scrollIntoView(true);", container)
+            print("\n📄 Product Description:\n")
+            product_description = container.text
+            print(product_description)
+            print("\n")
+            time.sleep(2)
 
             try:
                 button = WebDriverWait(driver, 10).until(
@@ -222,6 +217,7 @@ class BrilliantearthScraper(BaseScraper):
                 "setting_title": setting_title,
                 "setting_price": setting_price,
                 "diamond_title": diamond_title,
+                "product_description": product_description,
                 "updated_date_t": time.strftime("%Y-%m-%d"),
                 "additional_title": additional_title
             })
