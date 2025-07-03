@@ -238,6 +238,23 @@ def metal_diamond_price(driver):
     except:
         return None, None
 
+def get_full_product_description(driver):
+    try:
+        product_desc1 = driver.find_element(By.CLASS_NAME, "pd_description")
+        product_desc1_text = product_desc1.text
+        # print(f"product_desc1_text: {product_desc1_text}")
+
+        product_desc2 = driver.find_element(By.CLASS_NAME, "detailCol1")
+        product_desc2_text = product_desc2.text
+        # print(f"product_desc2_text: {product_desc2_text}")
+
+        full_product_description = product_desc1_text + "\n" + product_desc2_text
+        return full_product_description
+    except Exception as e:
+        print(f"Error in getting full product description: {e}")
+        return None
+
+
 def time_taken_decorator(func):
     def wrapper(*args, **kwargs):
         start_time = time.time()

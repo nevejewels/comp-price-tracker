@@ -1,3 +1,4 @@
+import datetime
 import sys
 import pandas as pd
 from helpers.webdriver_manager import get_firefox_driver
@@ -6,7 +7,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from helpers.common_helper import (
+    parse_numeric
+)
 from scrapers.diamondsfactory_helper import (
+    get_full_product_description,
     metal_diamond_price,
     metal_select,
     stone_type_select,
@@ -25,6 +30,17 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["price_scraping"]
 collection = db["diamondsfactory_30jun25"]
 
+import psycopg2
+pg_conn = psycopg2.connect(
+    host="178.79.182.27",
+    database="briqpay",
+    user="briqpay",
+    password="briqpay111"
+)
+pg_conn.autocommit = True
+pg_cursor = pg_conn.cursor()
+
+
 class DiamondsFactoryScraper(BaseScraper):
 
     def scrape(self):
@@ -33,32 +49,27 @@ class DiamondsFactoryScraper(BaseScraper):
         df_input = pd.read_excel('files/diamondsfactory/diamondsfactory_input.xlsx')
         self.logger.info(f"Total input rows: {len(df_input)}")
 
-        match_columns = [
-            "product_url",
-            "metal",
-            "stone_type",
-            "stone_shape",
-            "stone_carat",
-            "color",
-            "clarity",
-            "cut"
-        ]
+        today_str = datetime.datetime.today().strftime('%Y-%m-%d')        
+        pg_cursor.execute("""
+            SELECT product_url, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
+            FROM public.stg_price_df_scrape
+            WHERE updated_date_t = %s
+        """, (today_str,))
+        rows = pg_cursor.fetchall()
+        print(f"🛑 Total rows already scraped today: {len(rows)}")
 
-        existing_docs = list(collection.find({}, {col: 1 for col in match_columns}))
-        if not existing_docs:
-            self.logger.info("No existing records found in MongoDB. Scraping all rows.")
-            df_to_scrape = df_input.copy()
-        else:
-            df_existing = pd.DataFrame(existing_docs)
-            self.logger.info(f"Already crawled rows in DB: {len(df_existing)}")
+        # 5. Convert DB result to DataFrame
+        columns = ["product_url", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
+        df_scraped = pd.DataFrame(rows, columns=columns)
+        print(f"🛑 Already scraped rows today: {len(df_scraped)}")
 
-            # Merge input with existing to find uncrawled ones
-            df_merged = pd.merge(df_input, df_existing, on=match_columns, how='left', indicator=True)
-            df_to_scrape = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
+        # 6. Merge to find remaining rows
+        df_merged = pd.merge(df_input, df_scraped, on=columns, how='left', indicator=True)
+        df_remaining = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
+        print(f"✅ Remaining rows to scrape: {len(df_remaining)}")
 
-        self.logger.info(f"Remaining rows to scrape: {len(df_to_scrape)}")
 
-        for index, row in df_to_scrape.iterrows():
+        for index, row in df_input.iterrows():
             print("\n")
             url = row['product_url']
             metal = row['metal']
@@ -133,24 +144,98 @@ class DiamondsFactoryScraper(BaseScraper):
             metal_price, diamond_price = metal_diamond_price(driver)
             print(f"Metal Price: {metal_price}, Diamond Price: {diamond_price}")
 
+            full_product_description = get_full_product_description(driver)
+            print("📝 Full Product Description:\n", full_product_description)
+
+
             row_data = row.to_dict()
             row_data.update({
                 "product_title": title,
                 "metal_price": metal_price,
                 "stone_price": diamond_price,
-                "final_price": final_price,
-                "scraped_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-                "strike_price": strike_price,
+                "final_price": strike_price,
+                "product_description": full_product_description,
+                "updated_date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "promotion_price": final_price,
                 "rrp_price": rrp_price,
-                "you_save": you_save
+                "you_save": you_save,
+                "updated_date_t": time.strftime("%Y-%m-%d"),
                 # "detail_json": detail_json
             })
 
-            row_data.pop('_id', None)
+            row_data["metal_price"] = parse_numeric(row_data.get("metal_price"))
+            row_data["stone_price"] = parse_numeric(row_data.get("stone_price"))
+            row_data["final_price"] = parse_numeric(row_data.get("final_price"))
+            row_data["promotion_price"] = parse_numeric(row_data.get("promotion_price"))
+            row_data["rrp_price"] = parse_numeric(row_data.get("rrp_price"))
+            row_data["you_save"] = parse_numeric(row_data.get("you_save"))
+
             for key, value in row_data.items():
-                if pd.isna(value):
+                if value in ["", "N/A"] or pd.isna(value):
                     row_data[key] = None
-            collection.insert_one(row_data)
-            self.logger.info(f"Inserted data into MongoDB for URL: {url}")
+
+            print("row_data = ", row_data)
+
+            insert_query = """
+                INSERT INTO public.stg_price_df_scrape (
+                    website, product_url, category, sub_category, collection_no, variant_no,
+                    metal, stone_type, stone_shape, stone_carat, color, clarity, cut,
+                    product_title, metal_price, stone_price, final_price, updated_date,
+                    setting_title, setting_price, diamond_title, product_description,
+                    additional_attributes, metal_price_e, stone_price_e, final_price_e,
+                    updated_date_t, metal_t, stone_type_t, stone_shape_t,
+                    clarity_t, cut_t, promotion_price, rrp_price, you_save
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s,
+                    %s, %s, %s, %s, 
+                    %s, %s, %s, %s, 
+                    %s, %s, %s, %s, %s)
+            """
+
+            values = [
+                row_data.get("website"),
+                row_data.get("product_url"),
+                row_data.get("category"),
+                row_data.get("sub_category"),
+                row_data.get("collection_no"),
+                row_data.get("variant_no"),
+                row_data.get("metal"),
+                row_data.get("stone_type"),
+                row_data.get("stone_shape"),
+                row_data.get("stone_carat"),
+                row_data.get("color"),
+                row_data.get("clarity"),
+                row_data.get("cut"),
+                row_data.get("product_title"),
+                row_data.get("metal_price"),
+                row_data.get("stone_price"),
+                row_data.get("final_price"),
+                row_data.get("updated_date"),
+                row_data.get("setting_title"),
+                row_data.get("setting_price"),
+                row_data.get("diamond_title"),
+                row_data.get("product_description"),
+                row_data.get("additional_attributes"),
+                row_data.get("metal_price_e"),
+                row_data.get("stone_price_e"),
+                row_data.get("final_price_e"),
+                row_data.get("updated_date_t"),
+                row_data.get("metal_t"),
+                row_data.get("stone_type_t"),
+                row_data.get("stone_shape_t"),
+                row_data.get("clarity_t"),
+                row_data.get("cut_t"),
+                row_data.get("promotion_price"),
+                row_data.get("rrp_price"),
+                row_data.get("you_save")
+            ]
+
+            pg_cursor.execute(insert_query, values)
+
+            self.logger.info(f"Inserted data into PostgreSQL for URL: {url}")
+            self.logger.info(f"Scraping completed for URL: {url}")
 
             driver.quit()

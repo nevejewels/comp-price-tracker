@@ -55,7 +55,7 @@ class BrilliantearthScraper(BaseScraper):
         today_str = datetime.datetime.today().strftime('%Y-%m-%d')        
         pg_cursor.execute("""
             SELECT product_url, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
-            FROM public.price_brilliantearth_scrape
+            FROM public.stg_price_brilliantearth_scrape
             WHERE updated_date_t = %s
         """, (today_str,))
         rows = pg_cursor.fetchall()
@@ -230,13 +230,13 @@ class BrilliantearthScraper(BaseScraper):
             # collection.insert_one(row_data)
 
             for key, value in row_data.items():
-                if value in ["", "N/A"]:
+                if value in ["", "N/A"] or pd.isna(value):
                     row_data[key] = None
 
             print("row_data = ", row_data)
 
             insert_query = """
-                INSERT INTO public.price_brilliantearth_scrape (
+                INSERT INTO public.stg_price_brilliantearth_scrape (
                     website, product_url, category, sub_category, collection_no, variant_no,
                     metal, stone_type, stone_shape, stone_carat, color, clarity, cut,
                     product_title, metal_price, stone_price, final_price, updated_date,
