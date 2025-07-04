@@ -132,62 +132,6 @@ def set_carat_range(driver, logger, min_value="1.0", max_value="1.0"):
         logger.error(f"❌ Failed to set carat range: {e}")
 
 
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-import time
-
-# def select_cut(driver, logger, cut_level):
-#     cut_map = {
-#         "Fair": 0,
-#         "Good": 1,
-#         "Very Good": 2,
-#         "Ideal": 3,
-#         "Super Ideal": 4
-#     }
-
-#     cut_level = cut_level.strip().title()
-#     if cut_level not in cut_map:
-#         logger.error(f"❌ Invalid cut level '{cut_level}'. Valid options: {list(cut_map.keys())}")
-#         return
-
-#     try:
-#         handle_parent = driver.find_element(By.ID, "Cut")
-#         handles = handle_parent.find_elements(By.CLASS_NAME, "noUi-handle")
-
-#         if len(handles) != 2:
-#             logger.error("❌ Could not find both slider handles.")
-#             return
-
-#         min_handle = handles[0]
-#         max_handle = handles[1]
-
-#         slider = driver.find_element(By.ID, "js_cut_slider")
-#         slider_width = slider.size['width']
-#         step_width = slider_width / (len(cut_map))
-
-#         actions = ActionChains(driver)
-
-#         target_x = int(cut_map[cut_level] * step_width)
-#         print(f"Target X position for cut level '{cut_level}': {target_x}")
-
-#         # # Move min handle to 0 (safe left reset)
-#         # actions.click_and_hold(min_handle).move_by_offset(-step_width * 5, 0).release().perform()
-#         # time.sleep(0.3)
-
-#         # Move max handle to far right (safe right reset)
-#         actions.click_and_hold(max_handle).move_by_offset(step_width * 5, 0).release().perform()
-#         time.sleep(0.3)
-
-#         # Now move both to target_x
-#         actions.click_and_hold(min_handle).move_by_offset(target_x, 0).release().perform()
-#         time.sleep(0.3)
-
-#         actions.click_and_hold(max_handle).move_by_offset(target_x - slider_width, 0).release().perform()
-
-#         logger.info(f"✅ Selected cut level: {cut_level}")
-#     except Exception as e:
-#         logger.error(f"❌ Failed to select cut level '{cut_level}': {e}")
-
 def select_cut(driver, logger, cut_level):
     cut_map = {
         "Fair": 0,
@@ -292,32 +236,6 @@ def select_clarity(driver, logger, clarity_value):
         logger.error(f"❌ Failed to set clarity '{clarity_value}' via JS: {e}")
 
 
-# def click_first_select_diamond(driver, logger):
-#     try:
-#         # Wait until the diamond product grid is present
-#         WebDriverWait(driver, 10).until(
-#             EC.presence_of_element_located((By.ID, "diamonds_search_gallery"))
-#         )
-
-#         # Find all diamond products
-#         products = driver.find_elements(By.CSS_SELECTOR, "#diamonds_search_gallery .per-product")
-
-#         if not products:
-#             logger.error("❌ No diamond products found.")
-#             return
-
-#         first_product = products[0]
-
-#         # Within the first product, find the "Select Diamond" button
-#         select_button = first_product.find_element(By.CSS_SELECTOR, ".js-select-diamond-cta")
-#         # driver.execute_script("arguments[0].scrollIntoView(true);", select_button)
-#         select_button.click()
-
-#         logger.info("✅ Clicked on the 'Select Diamond' button of the first product.")
-
-#     except Exception as e:
-#         logger.error(f"❌ Failed to click on the first 'Select Diamond' button: {e}")
-
 def click_first_select_diamond(driver, logger):
 
     first_button = driver.find_elements(By.XPATH, "//a[contains(text(), 'Select Diamond')]")
@@ -330,28 +248,20 @@ def click_first_select_diamond(driver, logger):
     else:
         return False
 
-    # try:
-    #     # Find all <a> tags
-    #     anchor_tags = driver.find_elements(By.TAG_NAME, "a")
-    #     print(f"Found {len(anchor_tags)} anchor tags on the page.")
+def get_full_product_description(driver, logger):
+    try:
+        wait = WebDriverWait(driver, 10)
+        container = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'tm-space-y-[30px]')]")))
+        driver.execute_script("arguments[0].scrollIntoView(true);", container)
+        logger.info("\n📄 Product Description:\n")
+        product_description = container.text
+        logger.info(product_description)
+        logger.info("\n")
+        return product_description
+    except Exception as e:
+        logger.error(f"❌ Error getting full product description: {e}")
+        return None
 
-    #     # Filter to anchors with exact text "Select Diamond"
-    #     select_links = [a for a in anchor_tags if a.text.strip() == "Select Diamond"]
-    #     print(f"Found {len(select_links)} 'Select Diamond' links.")
-
-    #     if not select_links:
-    #         logger.error("❌ No 'Select Diamond' links found on the page.")
-    #         return
-
-    #     # Scroll to and click the first one
-    #     driver.execute_script("arguments[0].scrollIntoView(true);", select_links[0])
-    #     time.sleep(1)
-    #     print("done scrolling to the first 'Select Diamond' link.")
-    #     select_links[0].click()
-
-    #     logger.info("✅ Clicked on the first 'Select Diamond' link.")
-    # except Exception as e:
-    #     logger.error(f"❌ Failed to click 'Select Diamond': {e}")
 
 def get_product_details(driver, logger):
     try:
