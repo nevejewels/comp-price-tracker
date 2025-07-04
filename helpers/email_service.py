@@ -2,14 +2,17 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import traceback
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Email configuration
 EMAIL_CONFIG = {
-    'sender': 'rahul.gupta@navgrahaa.com',
-    'password': 'sqsv odau pbmj tgkv',
-    'recipients': ['rahul.gupta@navgrahaa.com', 'shilwant.gupta@navgrahaa.com'],
-    'smtp_server': 'smtp.gmail.com',
-    'smtp_port': 587
+    'sender': os.getenv('EMAIL_SENDER'),
+    'password': os.getenv('EMAIL_PASSWORD'),
+    'recipients': os.getenv('EMAIL_RECIPIENTS').split(','),
+    'smtp_server': os.getenv('EMAIL_SMTP_SERVER'),
+    'smtp_port': int(os.getenv('EMAIL_SMTP_PORT'))
 }
 
 def send_email(subject, body, is_error=False):
