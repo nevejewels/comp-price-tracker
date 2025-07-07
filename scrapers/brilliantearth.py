@@ -277,7 +277,7 @@ class BrilliantearthScraper(BaseScraper):
                         row_data.get("additional_title")
                     ]
 
-                    # pg_cursor.execute(insert_query, values)
+                    pg_cursor.execute(insert_query, values)
 
 
                     self.logger.info(f"Inserted data into PostgreSQL for URL: {url}")
