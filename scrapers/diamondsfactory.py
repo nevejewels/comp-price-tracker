@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 import sys
 import pandas as pd
 from helpers.email_service import send_error_email
@@ -39,7 +40,12 @@ class DiamondsFactoryScraper(BaseScraper):
             df_input = pd.read_excel('files/diamondsfactory/diamondsfactory_input.xlsx')
             self.logger.info(f"Total input rows: {len(df_input)}")
 
-            today_str = datetime.datetime.today().strftime('%Y-%m-%d')        
+            today_str = datetime.datetime.today().strftime('%Y-%m-%d')
+            # today_str1 = datetime.datetime.today()
+            # three_days_ago = today_str1 - datetime.timedelta(days=1)
+            # today_str = three_days_ago.strftime('%Y-%m-%d')
+            print("🗓️ Today's date for scraping: ", today_str)
+
             pg_cursor.execute("""
                 SELECT product_url, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
                 FROM public.stg_price_df_scrape
@@ -138,6 +144,11 @@ class DiamondsFactoryScraper(BaseScraper):
                     full_product_description = get_full_product_description(driver)
                     print("📝 Full Product Description:\n", full_product_description)
 
+                    updated_date = time.strftime("%Y-%m-%d %H:%M:%S")
+                    # now = datetime.datetime.now()
+                    # three_days_ago = now - datetime.timedelta(days=1)
+                    # updated_date = three_days_ago.strftime("%Y-%m-%d %H:%M:%S")
+                    print(f"Updated Date: {updated_date}")
 
                     row_data = row.to_dict()
                     row_data.update({
@@ -146,11 +157,11 @@ class DiamondsFactoryScraper(BaseScraper):
                         "stone_price": diamond_price,
                         "final_price": strike_price,
                         "product_description": full_product_description,
-                        "updated_date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "updated_date": updated_date,
                         "promotion_price": final_price,
                         "rrp_price": rrp_price,
                         "you_save": you_save,
-                        "updated_date_t": time.strftime("%Y-%m-%d"),
+                        "updated_date_t": today_str
                         # "detail_json": detail_json
                     })
 

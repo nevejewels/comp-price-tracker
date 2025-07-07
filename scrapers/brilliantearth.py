@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 import sys
 import pandas as pd
 from helpers.webdriver_manager import get_firefox_driver
@@ -58,7 +59,12 @@ class BrilliantearthScraper(BaseScraper):
             df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data.xlsx')
             self.logger.info(f"Total input rows: {len(df_input)}")
 
-            today_str = datetime.datetime.today().strftime('%Y-%m-%d')        
+            today_str = datetime.datetime.today().strftime('%Y-%m-%d')
+            # today_str1 = datetime.datetime.today()
+            # three_days_ago = today_str1 - datetime.timedelta(days=1)
+            # today_str = three_days_ago.strftime('%Y-%m-%d')
+            print("🗓️ Today's date for scraping: ", today_str)
+
             pg_cursor.execute("""
                 SELECT product_url, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
                 FROM public.stg_price_brilliantearth_scrape
@@ -208,17 +214,23 @@ class BrilliantearthScraper(BaseScraper):
                     print("diamond_title:", diamond_title)
                     print("stone_price:", stone_price)
 
+                    updated_date = time.strftime("%Y-%m-%d %H:%M:%S")
+                    # now = datetime.datetime.now()
+                    # three_days_ago = now - datetime.timedelta(days=1)
+                    # updated_date = three_days_ago.strftime("%Y-%m-%d %H:%M:%S")
+                    print(f"Updated Date: {updated_date}")
+
                     row_data.update({
                         "product_title": initial_title,
                         "metal_price": metal_price,
                         "stone_price": stone_price,
                         "final_price": total_price,
-                        "updated_date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "updated_date": updated_date,
                         "setting_title": setting_title,
                         "setting_price": setting_price,
                         "diamond_title": diamond_title,
                         "product_description": product_description,
-                        "updated_date_t": time.strftime("%Y-%m-%d"),
+                        "updated_date_t": today_str,
                         "additional_title": additional_title
                     })
 
