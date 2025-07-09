@@ -13,7 +13,7 @@ LOG_FILE = os.path.join(CONFIG_DIR, "vpn_log.txt")
 # -------------------------
 
 def disconnect_vpn():
-    print("🛑 Disconnecting any running VPN...")
+    print("Disconnecting any running VPN...")
     subprocess.run("taskkill /F /IM openvpn.exe >nul 2>&1", shell=True)
 
 def get_uk_ovpn_files():
@@ -21,7 +21,7 @@ def get_uk_ovpn_files():
 
 def connect_vpn(config_file):
     config_path = os.path.join(CONFIG_DIR, config_file)
-    print(f"🔌 Connecting to: {config_file}")
+    print(f"Connecting to: {config_file}")
 
     with open(LOG_FILE, 'w') as log_file:
         process = subprocess.Popen(
@@ -32,30 +32,30 @@ def connect_vpn(config_file):
         )
 
     # Wait for VPN to connect
-    print("⏳ Waiting for VPN to fully connect...")
+    print("Waiting for VPN to fully connect...")
     for i in range(WAIT_TIME):
         if os.path.exists(LOG_FILE):
             with open(LOG_FILE, 'r') as f:
                 log = f.read()
                 if "Initialization Sequence Completed" in log:
-                    print("✅ VPN Connected Successfully.")
+                    print("VPN Connected Successfully.")
                     break
         time.sleep(1)
     else:
-        print("❌ VPN may not have connected. Check vpn_log.txt.")
+        print("VPN may not have connected. Check vpn_log.txt.")
 
     return process
 
 def get_public_ip():
-    print("🌐 Fetching public IP addresses...")
+    print("Fetching public IP addresses...")
     try:
         ip1 = requests.get("https://api.ipify.org", timeout=10).text
         ip2 = requests.get("https://ifconfig.me", timeout=10).text
-        print(f"🌐 IP from api.ipify.org: {ip1}")
-        print(f"🌍 IP from ifconfig.me: {ip2}")
+        print(f"IP from api.ipify.org: {ip1}")
+        print(f"IP from ifconfig.me: {ip2}")
         return ip1
     except Exception as e:
-        print(f"⚠️ Could not fetch public IP. {e}")
+        print(f"Could not fetch public IP. {e}")
         return None
 
 def rotate_once():
@@ -64,13 +64,13 @@ def rotate_once():
 
     uk_configs = get_uk_ovpn_files()
     if not uk_configs:
-        print("❌ No UK .ovpn files found.")
+        print("No UK .ovpn files found.")
         return None
 
     selected = random.choice(uk_configs)
     process = connect_vpn(selected)
 
-    print("🔍 Verifying new IP...")
+    print("Verifying new IP...")
     time.sleep(5)
     get_public_ip()
 
@@ -80,10 +80,10 @@ def rotate_once():
 if __name__ == "__main__":
     try:
         while True:
-            print("\n🔁 Rotating VPN IP...")
+            print("\nRotating VPN IP...")
             vpn_process = rotate_once()
-            print(f"🕒 Waiting {ROTATE_EVERY}s before next rotation...\n")
+            print(f"Waiting {ROTATE_EVERY}s before next rotation...\n")
             time.sleep(ROTATE_EVERY)
     except KeyboardInterrupt:
         disconnect_vpn()
-        print("🛑 Exited by user.")
+        print("Exited by user.")

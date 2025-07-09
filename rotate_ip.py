@@ -10,7 +10,7 @@ import ctypes
 CONFIG_DIR = r"C:\Users\rahul.gupta\OpenVPN\config"  # Path to .ovpn files
 OPENVPN_PATH = r"C:\Program Files\OpenVPN\bin\openvpn.exe"  # OpenVPN binary
 WAIT_TIME = 60  # Max seconds to wait for VPN to connect
-ROTATE_EVERY = 120  # Seconds between rotations
+ROTATE_EVERY = 10  # Seconds between rotations
 LOG_FILE = os.path.join(CONFIG_DIR, "vpn_log.txt")
 # -------------------------
 
@@ -242,8 +242,8 @@ def main():
     print("=" * 50)
     
     try:
-        rotation_count = 0
-        while True:
+            rotation_count = 0
+        # while True:
             rotation_count += 1
             print(f"\n VPN Rotation #{rotation_count}")
             print("-" * 30)
