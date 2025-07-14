@@ -26,6 +26,7 @@ def bemain():
         logger.info("Loading input file: Brilliantearth_input_data.xlsx")
         df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data.xlsx')
         total_items = len(df_input)
+        print(f"Total input items: {total_items}")
         logger.info(f"Total input items: {total_items}")
         
         try:
