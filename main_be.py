@@ -11,6 +11,7 @@ from utils.db import pg_cursor
 
 def bemain():
     driver = None
+    total_items = 0
     logger = setup_logger("brilliantearth_scraper")
     logger.info("Brilliantearth scraping job started.")
     

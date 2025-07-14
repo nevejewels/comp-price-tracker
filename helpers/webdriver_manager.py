@@ -2,6 +2,19 @@ from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 
+def get_firefox_driver(headless=False):
+    options = Options()
+    options.headless = headless  # Use True for headless mode
+
+    # Block images directly using set_preference on options
+    options.set_preference("permissions.default.image", 2)
+
+    service = Service("/usr/local/bin/geckodriver")
+
+    driver = webdriver.Firefox(service=service, options=options)
+    driver.implicitly_wait(10)
+    return driver
+
 # def get_firefox_driver(headless=False):
 
 #     options = Options()
@@ -17,19 +30,3 @@ from selenium.webdriver.firefox.options import Options
 
 #     driver.implicitly_wait(10)
 #     return driver
-
-
-def get_firefox_driver(headless=False):
-    options = Options()
-    options.headless = headless  # Use True if you want to run in headless mode
-
-    # Optional: Block images (Linux way)
-    profile = webdriver.FirefoxProfile()
-    profile.set_preference("permissions.default.image", 2)
-    profile.update_preferences()
-
-    service = Service("/usr/local/bin/geckodriver")  # Path after moving geckodriver
-
-    driver = webdriver.Firefox(service=service, options=options, firefox_profile=profile)
-    driver.implicitly_wait(10)
-    return driver
