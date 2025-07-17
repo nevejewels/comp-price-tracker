@@ -4,35 +4,15 @@ from pymongo import MongoClient
 import hashlib
 import time
 import re
-import pandas as pd
 
-# # === MongoDB Setup ===
-# client = MongoClient("mongodb://localhost:27017/")
-# db = client["instock"]
-# collection = db["price_n_tagno_8thjuly"]
-
-import psycopg2
-
-pg_conn = psycopg2.connect(
-    host="178.79.182.27",
-    database="briqpay",
-    user="briqpay",
-    password="briqpay111"
-)
-pg_conn.autocommit = True
-pg_cursor = pg_conn.cursor()
-
-
-# # === Load URLs ===
-# # with open(r"C:\Users\komal.kumavat\Documents\PDP_urls_data_fetching\scraped_urls.txt", "r", encoding="utf-8") as f:
-# with open(r"C:\Users\rahul.gupta\Documents\pycodes\scraped_urls.txt", "r", encoding="utf-8") as f:
-#     urls = [line.strip() for line in f if line.strip()]
-
-csv_file_path = r"files\instock\instock_urls.csv"
-df = pd.read_csv(csv_file_path)
-urls = df['product_url'].dropna().unique().tolist()
-
-
+# === MongoDB Setup ===
+client = MongoClient("mongodb://localhost:27017/")
+db = client["instock"]
+collection = db["price_n_tagno_8thjuly"]
+# === Load URLs ===
+# with open(r"C:\Users\komal.kumavat\Documents\PDP_urls_data_fetching\scraped_urls.txt", "r", encoding="utf-8") as f:
+with open(r"C:\Users\rahul.gupta\Documents\pycodes\scraped_urls.txt", "r", encoding="utf-8") as f:
+    urls = [line.strip() for line in f if line.strip()]
 
 # === Utility Functions ===
 def clean(text):
@@ -202,36 +182,13 @@ def scrape_product_page(url):
         data["_id"] = hashlib.md5(url.encode()).hexdigest()
         data["scraped_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
         
-        # collection.update_one(
-        #     {"_id": data["_id"]},
-        #     {"$set": data},
-        #     upsert=True
-        # )
-        # print("✅ Stored in MongoDB")
+        collection.update_one(
+            {"_id": data["_id"]},
+            {"$set": data},
+            upsert=True
+        )
+        print("✅ Stored in MongoDB")
         
-        print("data:", data)
-        tag_no = data.get("Tag No", "NULL")
-        print("tag_no:", tag_no)
-        price = ""
-        if "Product Details" in data:
-            for item in data["Product Details"]:
-                if "price_raw" in item:
-                    price = item["price_raw"]
-                    break
-
-        scraped_at = data["scraped_at"]
-        product_url = data["product_url"]
-
-        try:
-            pg_cursor.execute("""
-                INSERT INTO instock_scrape_data (tag_no, price, scraped_at, product_url)
-                VALUES (%s, %s, %s, %s);
-            """, (tag_no, price, scraped_at, product_url))
-            
-            print("✅ Stored in PostgreSQL")
-        except Exception as pg_err:
-            print(f"❌ PostgreSQL Insert Error: {pg_err}")
-
     except Exception as e:
         print(f"❌ Error scraping {url}: {e}")
     finally:
