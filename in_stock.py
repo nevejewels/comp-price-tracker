@@ -21,7 +21,7 @@ def scrape_product_urls(url):
 
     driver = uc.Chrome(options=options)
     driver.get(url)
-    time.sleep(25)  # Allow time for JS to render
+    time.sleep(60)  # Allow time for JS to render
 
     try:
         WebDriverWait(driver, 10).until(
@@ -77,12 +77,15 @@ def scrape_product_urls(url):
 # =========================
 # Main Execution
 # =========================
+# urls = [
+#     "https://www.diamondsfactory.co.uk/available-now/instock-rings?instock=1&page=1&limit=5000",
+#     "https://www.diamondsfactory.co.uk/available-now/instock-earrings?instock=1&page=1&limit=5000",
+#     "https://www.diamondsfactory.co.uk/available-now/instock-pendants?instock=1&page=1&limit=5000",
+#     "https://www.diamondsfactory.co.uk/available-now/instock-bracelets?instock=1&page=1&limit=5000",
+#     "https://www.diamondsfactory.co.uk/available-now/instock-gift-sets?instock=1&page=1&limit=5000",
+# ]
 urls = [
-    "https://www.diamondsfactory.co.uk/available-now/instock-rings?instock=1&page=1&limit=5000",
-    "https://www.diamondsfactory.co.uk/available-now/instock-earrings?instock=1&page=1&limit=5000",
-    "https://www.diamondsfactory.co.uk/available-now/instock-pendants?instock=1&page=1&limit=5000",
-    "https://www.diamondsfactory.co.uk/available-now/instock-bracelets?instock=1&page=1&limit=5000",
-    "https://www.diamondsfactory.co.uk/available-now/instock-gift-sets?instock=1&page=1&limit=5000",
+    "https://www.diamondsfactory.co.uk/available-now?instock=1&page=1&limit=5000"
 ]
 
 all_scraped_data = []
