@@ -71,6 +71,7 @@ def scrape_product_urls(url):
         last_height = new_height
 
     driver.quit()
+    del driver
     return list(product_urls)
 
 
