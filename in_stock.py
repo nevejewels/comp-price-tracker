@@ -236,7 +236,12 @@ if __name__ == "__main__":
 
 
     # Get already scraped URLs from DB
-    pg_cursor.execute("SELECT product_url FROM instock_scrape_data;")
+    # pg_cursor.execute("SELECT product_url FROM instock_scrape_data;")
+    pg_cursor.execute("""
+        SELECT product_url 
+        FROM instock_scrape_data 
+        WHERE DATE(scraped_at) = CURRENT_DATE;
+    """)
     scraped_urls = set(row[0] for row in pg_cursor.fetchall())
 
     remaining_urls = [url for url in all_urls if url not in scraped_urls]
