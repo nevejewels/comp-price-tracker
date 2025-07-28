@@ -1,16 +1,13 @@
-import time
-import csv
-import os
-import hashlib
-import psycopg2
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from helpers.webdriver_manager import get_firefox_driver
 from datetime import datetime
+import time
 import re
+import hashlib
 import pandas as pd
-
+import psycopg2
 
 # =========================
 # PostgreSQL Setup
@@ -48,15 +45,13 @@ def parse_design_number(value):
 # Scrape Product URLs
 # =========================
 def scrape_product_urls(url):
-    # options = uc.ChromeOptions()
-    # options.add_argument("--window-size=1920,1080")
-    # options.add_argument("--no-sandbox")
-    # options.add_argument("--disable-blink-features=AutomationControlled")
-    # options.version_main = 135
-    # driver = uc.Chrome(options=options)
+    options = uc.ChromeOptions()
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.version_main = 135
 
-    driver = get_firefox_driver()
-
+    driver = uc.Chrome(options=options)
     driver.get(url)
     time.sleep(10)
 
@@ -177,19 +172,17 @@ def extract_all_data(driver):
 # Scrape Single Product Page
 # =========================
 def scrape_product_page(url):
-    print(f"🔍 Scraping: {url}")
-    # options = uc.ChromeOptions()
-    # options.add_argument("--headless")
-    # options.add_argument("--no-sandbox")
-    # options.add_argument("--disable-dev-shm-usage")
-    # options.add_argument("--disable-gpu")
-    # options.add_argument("--disable-blink-features=AutomationControlled")
-    # options.add_argument("--window-size=1920,1080")
-    # options.version_main = 138
-    # driver = uc.Chrome(options=options)
-    
-    driver = get_firefox_driver(headless=True)
+    print(f"\n🔍 Scraping: {url}")
+    options = uc.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--window-size=1920,1080")
+    options.version_main = 137
 
+    driver = uc.Chrome(options=options)
     try:
         driver.get(url)
         time.sleep(6)
@@ -197,14 +190,7 @@ def scrape_product_page(url):
         data = extract_all_data(driver)
         data["product_url"] = url
         data["_id"] = hashlib.md5(url.encode()).hexdigest()
-        
-        # Change
-        current_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        # now = datetime.datetime.now()
-        # three_days_ago = now - datetime.timedelta(days=1)
-        # current_time = three_days_ago.strftime("%Y-%m-%d %H:%M:%S")
-
-        data["scraped_at"] = current_time
+        data["scraped_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
         tag_no = data.get("Tag No", "NULL")
         price = ""
@@ -215,7 +201,7 @@ def scrape_product_page(url):
                     break
 
         pg_cursor.execute("""
-            INSERT INTO stg_instock_scrape_data (tag_no, price, scraped_at, product_url)
+            INSERT INTO instock_scrape_data (tag_no, price, scraped_at, product_url)
             VALUES (%s, %s, %s, %s)
             ON CONFLICT DO NOTHING;
         """, (tag_no, price, data["scraped_at"], url))
@@ -234,66 +220,37 @@ if __name__ == "__main__":
         "https://www.diamondsfactory.co.uk/available-now?instock=1&page=1&limit=5000"
     ]
 
-    # all_urls = []
-    # for url in listing_urls:
-    #     print(f"\n📡 Fetching product URLs from: {url}")
-    #     product_urls = scrape_product_urls(url)
-    #     print(f"✅ Collected {len(product_urls)} product URLs")
-    #     all_urls.extend(product_urls)
+    all_urls = []
+    for url in listing_urls:
+        print(f"\n📡 Fetching product URLs from: {url}")
+        product_urls = scrape_product_urls(url)
+        print(f"✅ Collected {len(product_urls)} product URLs")
+        all_urls.extend(product_urls)
 
-
-    def load_urls_from_csv(filename):
-        if not os.path.exists(filename):
-            return []
-
-        df = pd.read_csv(filename)
-        return df["product_url"].dropna().tolist()
-
-    # Change
+    # Save URLs with today's date
     today_str = datetime.today().strftime("%Y-%m-%d")
-    # today_str = '2025-07-27'
     csv_filename = f"files/instock/instock_urls_{today_str}.csv"
     print("csv_filename:", csv_filename)
-
-    # df = pd.DataFrame([{"product_url": u} for u in all_urls])
-    # df.to_csv(csv_filename, index=False)
-    # print(f"📁 URLs saved to: {csv_filename}")
-
-    if os.path.exists(csv_filename):
-        print(f"📄 Found existing CSV: {csv_filename}")
-        all_urls = load_urls_from_csv(csv_filename)
-        print("Total URLs loaded from CSV:", len(all_urls))
-
-    else:
-        print("📡 Scraping fresh URLs...")
-        all_urls = []
-        for url in listing_urls:
-            product_urls = scrape_product_urls(url)
-            print(f"✅ Collected {len(product_urls)} product URLs")
-            all_urls.extend(product_urls)
-
-        os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
-        pd.DataFrame([{"product_url": u} for u in all_urls]).to_csv(csv_filename, index=False)
-        print(f"📁 URLs saved to: {csv_filename}")
+    df = pd.DataFrame([{"product_url": u} for u in all_urls])
+    df.to_csv(csv_filename, index=False)
+    print(f"📁 URLs saved to: {csv_filename}")
 
 
     # Get already scraped URLs from DB
-    # pg_cursor.execute("SELECT product_url FROM stg_instock_scrape_data;")
-    query_date = today_str
+    # pg_cursor.execute("SELECT product_url FROM instock_scrape_data;")
     pg_cursor.execute("""
         SELECT product_url 
-        FROM stg_instock_scrape_data 
-        WHERE DATE(scraped_at) = %s;
-    """, (query_date,))
+        FROM instock_scrape_data 
+        WHERE DATE(scraped_at) = CURRENT_DATE;
+    """)
     scraped_urls = set(row[0] for row in pg_cursor.fetchall())
-    print("Scraped URLs from DB:", len(scraped_urls))
 
     remaining_urls = [url for url in all_urls if url not in scraped_urls]
     print(f"\n🔁 Remaining to scrape: {len(remaining_urls)}")
 
     print(f"\n🚀 Starting scraping of {len(remaining_urls)} product pages...")
     for i, product_url in enumerate(remaining_urls, 1):
-        print(f"\nProgress: {i}/{len(remaining_urls)}")
+        print(f"Progress: {i}/{len(remaining_urls)}")
         scrape_product_page(product_url)
 
     print("\n🎉 All done!")
