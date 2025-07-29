@@ -10,7 +10,7 @@ from utils.db import pg_cursor
 
 def bemain():
     driver = get_firefox_driver(headless=False)
-    logger = setup_logger("brilliant_scraper")
+    logger = setup_logger(name="diamondfactory_scraper", file_name="diamondsfactory")
 
     try:
         scraper = BrilliantearthScraper(driver, logger)

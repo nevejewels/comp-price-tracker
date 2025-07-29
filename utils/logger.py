@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 
-def setup_logger(name="diamond_logger", level=logging.INFO):
+def setup_logger(name="diamond_logger", file_name="scraper", level=logging.INFO):
     # Create logger
     logger = logging.getLogger(name)
     logger.setLevel(level)
@@ -15,7 +15,8 @@ def setup_logger(name="diamond_logger", level=logging.INFO):
     log_dir = os.path.join(os.getcwd(), "files", "log")
     os.makedirs(log_dir, exist_ok=True)
 
-    log_filename = datetime.now().strftime("%Y-%m-%d") + ".log"
+    # Generate log file name: e.g., `brilliantearth_2025-07-28.log`
+    log_filename = f"{file_name}_{datetime.now().strftime('%Y-%m-%d')}.log"
     log_path = os.path.join(log_dir, log_filename)
 
     # Formatter

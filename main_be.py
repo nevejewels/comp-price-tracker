@@ -12,7 +12,7 @@ from utils.db import pg_cursor
 def bemain():
     driver = None
     total_items = 0
-    logger = setup_logger("brilliantearth_scraper")
+    logger = setup_logger(name="brilliantearth_scraper", file_name="brilliantearth")
     logger.info("Brilliantearth scraping job started.")
     
     start_time = time.time()
@@ -26,8 +26,8 @@ def bemain():
         # Load input data
         logger.info("Loading input file: Brilliantearth_input_data.xlsx")
         df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data.xlsx')
+        
         total_items = len(df_input)
-        print(f"Total input items: {total_items}")
         logger.info(f"Total input items: {total_items}")
         
         try:

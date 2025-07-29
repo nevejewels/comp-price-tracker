@@ -26,6 +26,8 @@ from scrapers.brilliantearth_helper import (
 import time
 
 import psycopg2
+
+from utils import logger
 pg_conn = psycopg2.connect(
     host="178.79.182.27",
     database="briqpay",
@@ -43,7 +45,7 @@ class BrilliantearthScraper(BaseScraper):
         total_failed = 0
 
         try:
-            print("Starting Brilliant Earth Scraper...")
+            self.logger.info("Starting Brilliant Earth Scraper...")
             self.driver.quit()
 
             # urls = ['https://www.brilliantearth.com/en-gb/1.4mm-Provence-Solitaire-Ring-Gold-BE1776-4345169/',
@@ -237,8 +239,8 @@ class BrilliantearthScraper(BaseScraper):
                     for key, value in row_data.items():
                         if value in ["", "N/A"] or pd.isna(value):
                             row_data[key] = None
-
-                    print("row_data = ", row_data)
+    
+                    logger.info("row_data = %s", row_data)
 
                     insert_query = """
                         INSERT INTO public.stg_price_brilliantearth_scrape (

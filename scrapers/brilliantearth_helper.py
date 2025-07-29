@@ -279,7 +279,10 @@ def get_product_details(driver, logger):
         setting_title = None
     try:
         setting_price_raw = driver.find_element(By.ID, "setting-price").text.strip()
-        setting_price = re.sub(r"[^\d.]", "", setting_price_raw)
+        try:
+            setting_price = re.sub(r"[^\d.]", "", setting_price_raw)
+        except:
+            setting_price = setting_price_raw
     except:
         setting_price = None
     try:
