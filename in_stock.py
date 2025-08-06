@@ -7,7 +7,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from helpers.webdriver_manager import get_firefox_driver
-from datetime import datetime
+import datetime
+from datetime import timedelta
 import re
 import pandas as pd
 
@@ -250,7 +251,7 @@ if __name__ == "__main__":
         return df["product_url"].dropna().tolist()
 
     # Change
-    today_str = datetime.today().strftime("%Y-%m-%d")
+    today_str = datetime.datetime.today().strftime("%Y-%m-%d")
     # today_str = '2025-07-27'
     csv_filename = f"files/instock/instock_urls_{today_str}.csv"
     print("csv_filename:", csv_filename)

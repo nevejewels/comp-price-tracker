@@ -236,6 +236,36 @@ def select_clarity(driver, logger, clarity_value):
         logger.error(f"❌ Failed to set clarity '{clarity_value}' via JS: {e}")
 
 
+def sortby_dropdown_click(driver, logger):
+    logger.info("Clicking on the 'Sort By' dropdown.")
+    dropdown_toggle = driver.find_element(By.ID, "js_dropdown_sort_by")
+    print(f"***** Dropdown toggle: {dropdown_toggle}")
+
+    # Hover over the dropdown using ActionChains
+    actions = ActionChains(driver)
+    actions.move_to_element(dropdown_toggle).perform()
+    print("Hovered on the dropdown toggle.")
+
+    time.sleep(1)  # Optional, but helps in some slow UIs
+
+    # Wait for dropdown menu to be visible
+    WebDriverWait(driver, 5).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "ul.dropdown-menu"))
+    )
+    logger.info("Looking for 'Price (Low to High)' option.")
+    
+    # Use contains() in XPath to avoid exact text mismatch
+    price_low_to_high = WebDriverWait(driver, 5).until(
+        EC.element_to_be_clickable((
+            By.XPATH,
+            "//a[contains(text(), 'Price (Low to High')]"
+        ))
+    )
+    
+    price_low_to_high.click()
+    print("Clicked on 'Price (Low to High)'.")
+
+
 def click_first_select_diamond(driver, logger):
 
     first_button = driver.find_elements(By.XPATH, "//a[contains(text(), 'Select Diamond')]")
@@ -268,11 +298,36 @@ def get_product_details(driver, logger):
         title = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//h1"))).text.strip()
     except:
         title = None
+
     try:
         price_raw = driver.find_element(By.XPATH, "(//span[@pdpprice and @ge-data-converted-full-price])[1]").text.strip()
-        price = re.sub(r"[^\d.]", "", price_raw)
+        print(f"Try Price raw: {price_raw}")
+        try:
+            price = re.sub(r"[^\d.]", "", price_raw)
+        except:
+            price = price_raw
     except:
-        price = None
+        print("Primary price XPath failed, trying fallback (setting-price).")
+        try:
+
+            ring_total_price = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    "//span[translate(normalize-space(text()), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='ring total']/following-sibling::span"
+                ))
+            ).text.strip()
+
+            print(f"✅ Ring Total Price: {ring_total_price}")
+            price_raw = ring_total_price
+
+            try:
+                price = re.sub(r"[^\d.]", "", price_raw)
+            except:
+                price = price_raw
+        except:
+            price = None
+
+
     try:
         setting_title = driver.find_element(By.CLASS_NAME, "setting_h1").text.strip().replace('\n', ' ')
     except:
@@ -308,3 +363,4 @@ def get_product_details(driver, logger):
         "diamond_title": diamond_title,
         "diamond_price": diamond_price
     }
+
