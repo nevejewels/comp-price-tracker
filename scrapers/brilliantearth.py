@@ -119,18 +119,18 @@ class BrilliantearthScraper(BaseScraper):
                     accept_cookies(driver)
                     time.sleep(4)
 
-                    # # metal_val = "18K White Gold" # "18K Yellow Gold" "14K Rose Gold" "Platinum"
-                    # metal_val = metal
-                    # click_metal_option(driver, self.logger, metal_val)
-                    # time.sleep(8)
+                    # metal_val = "18K White Gold" # "18K Yellow Gold" "14K Rose Gold" "Platinum"
+                    metal_val = metal
+                    click_metal_option(driver, self.logger, metal_val)
+                    time.sleep(8)
 
-                    # # style_name = "Classic" # "Hidden Halo"
-                    # # click_style_option(driver, self.logger, style_name)
+                    # style_name = "Classic" # "Hidden Halo"
+                    # click_style_option(driver, self.logger, style_name)
 
-                    # # stone_type_val = "Natural" # "Lab Grown"
-                    # stone_type_val = stone_type
-                    # click_stonetype_diamond(driver, self.logger, stone_type_val)
-                    # time.sleep(5)
+                    # stone_type_val = "Natural" # "Lab Grown"
+                    stone_type_val = stone_type
+                    click_stonetype_diamond(driver, self.logger, stone_type_val)
+                    time.sleep(5)
 
                     initial_title, metal_price = get_title_price(driver, self.logger)
                     time.sleep(1)
@@ -158,30 +158,30 @@ class BrilliantearthScraper(BaseScraper):
                         self.logger.error(f"Failed to click 'CHOOSE THIS SETTING' button: {e}")
                     time.sleep(8)
 
-                    # # stone_shape_value = "Round" # "Oval" "Emerald" "Cushion" "Elongated Cushion" "Radiant" "Princess" "Asscher"
-                    # stone_shape_value = stone_shape
-                    # click_stone_shape(driver, self.logger, stone_shape_value)
-                    # time.sleep(2)
+                    # stone_shape_value = "Round" # "Oval" "Emerald" "Cushion" "Elongated Cushion" "Radiant" "Princess" "Asscher"
+                    stone_shape_value = stone_shape
+                    click_stone_shape(driver, self.logger, stone_shape_value)
+                    time.sleep(2)
 
-                    # stone_carat_value = stone_carat
-                    # set_carat_range(driver, self.logger, stone_carat_value, stone_carat_value)
-                    # time.sleep(2)
+                    stone_carat_value = stone_carat
+                    set_carat_range(driver, self.logger, stone_carat_value, stone_carat_value)
+                    time.sleep(2)
 
-                    # # cut_values = "Fair" "Good" "Very Good" "Ideal" "Super Ideal"
-                    # cut_values = cut
-                    # select_cut(driver, self.logger, cut_values)
-                    # time.sleep(2)
-
-
-                    # color_val = color
-                    # select_color(driver, self.logger, color_val)
-                    # time.sleep(2)
+                    # cut_values = "Fair" "Good" "Very Good" "Ideal" "Super Ideal"
+                    cut_values = cut
+                    select_cut(driver, self.logger, cut_values)
+                    time.sleep(2)
 
 
-                    # # clarity_val = "SI2" # "SI1" "VS2" "VS1" "VVS2" "VVS1" "IF" "FL"
-                    # clarity_val = clarity
-                    # select_clarity(driver, self.logger, clarity_val)
-                    # time.sleep(2)
+                    color_val = color
+                    select_color(driver, self.logger, color_val)
+                    time.sleep(2)
+
+
+                    # clarity_val = "SI2" # "SI1" "VS2" "VS1" "VVS2" "VVS1" "IF" "FL"
+                    clarity_val = clarity
+                    select_clarity(driver, self.logger, clarity_val)
+                    time.sleep(2)
 
                     sortby_dropdown_click(driver, self.logger)
                     time.sleep(3)
@@ -297,7 +297,7 @@ class BrilliantearthScraper(BaseScraper):
                         row_data.get("additional_title")
                     ]
 
-                    # pg_cursor.execute(insert_query, values)
+                    pg_cursor.execute(insert_query, values)
 
 
                     self.logger.info(f"Inserted data into PostgreSQL for URL: {url}")
