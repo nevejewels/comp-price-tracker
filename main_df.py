@@ -30,7 +30,7 @@ def dfmain():
         scraper = DiamondsFactoryScraper(driver, logger)
         
         # Get the input data to know total count
-        df_input = pd.read_excel('files/diamondsfactory/diamondsfactory_input.xlsx')
+        df_input = pd.read_excel('files/diamondsfactory/diamondsfactory_input_final.xlsx')
         total_items = len(df_input)
         
         try:

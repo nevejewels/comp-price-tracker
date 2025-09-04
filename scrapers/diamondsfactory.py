@@ -37,7 +37,7 @@ class DiamondsFactoryScraper(BaseScraper):
         try:
             self.driver.quit()
 
-            df_input = pd.read_excel('files/diamondsfactory/diamondsfactory_input.xlsx')
+            df_input = pd.read_excel('files/diamondsfactory/diamondsfactory_input_final.xlsx')
             self.logger.info(f"Total input rows: {len(df_input)}")
 
             today_str = datetime.datetime.today().strftime('%Y-%m-%d')

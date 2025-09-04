@@ -24,8 +24,8 @@ def bemain():
         scraper = BrilliantearthScraper(driver, logger)
 
         # Load input data
-        logger.info("Loading input file: Brilliantearth_input_data.xlsx")
-        df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data2.xlsx')
+        logger.info("Loading input file: Brilliantearth_input_data_final.xlsx")
+        df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data_final.xlsx')
         
         total_items = len(df_input)
         logger.info(f"Total input items: {total_items}")

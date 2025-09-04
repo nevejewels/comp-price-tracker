@@ -61,7 +61,7 @@ class BrilliantearthScraper(BaseScraper):
             # print(df01.shape)
 
 
-            df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data2.xlsx')
+            df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data_final.xlsx')
             self.logger.info(f"Total input rows: {len(df_input)}")
 
             today_str = datetime.datetime.today().strftime('%Y-%m-%d')
