@@ -25,7 +25,9 @@ from scrapers.brilliantearth_helper import (
     sortby_dropdown_click
 )
 import time
-
+from helpers.common_helper import (
+    parse_numeric
+)
 import psycopg2
 
 from utils import logger
@@ -59,13 +61,13 @@ class BrilliantearthScraper(BaseScraper):
             # print(df01.shape)
 
 
-            df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data.xlsx')
+            df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data2.xlsx')
             self.logger.info(f"Total input rows: {len(df_input)}")
 
-            # today_str = datetime.datetime.today().strftime('%Y-%m-%d')
-            today_str1 = datetime.datetime.today()
-            three_days_ago = today_str1 - datetime.timedelta(days=150)
-            today_str = three_days_ago.strftime('%Y-%m-%d')
+            today_str = datetime.datetime.today().strftime('%Y-%m-%d')
+            # today_str1 = datetime.datetime.today()
+            # three_days_ago = today_str1 - datetime.timedelta(days=1)
+            # today_str = three_days_ago.strftime('%Y-%m-%d')
             self.logger.info("Today's date for scraping: %s", today_str)
 
             pg_cursor.execute("""
@@ -234,6 +236,7 @@ class BrilliantearthScraper(BaseScraper):
                         "stone_price": stone_price,
                         "final_price": total_price,
                         "updated_date": updated_date,
+                        "promotion_price": total_price,
                         "setting_title": setting_title,
                         "setting_price": setting_price,
                         "diamond_title": diamond_title,
@@ -241,6 +244,7 @@ class BrilliantearthScraper(BaseScraper):
                         "updated_date_t": today_str,
                         "additional_title": additional_title
                     })
+                    row_data["promotion_price"] = parse_numeric(row_data.get("promotion_price"))
 
                     for key, value in row_data.items():
                         if value in ["", "N/A"] or pd.isna(value):
@@ -256,9 +260,9 @@ class BrilliantearthScraper(BaseScraper):
                             setting_title, setting_price, diamond_title, product_description,
                             additional_attributes, metal_t, stone_type_t, stone_shape_t,
                             clarity_t, cut_t, metal_price_e, stone_price_e, final_price_e,
-                            updated_date_t, additional_title
+                            updated_date_t, additional_title, promotion_price
                         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """
 
                     values = [
@@ -294,7 +298,8 @@ class BrilliantearthScraper(BaseScraper):
                         row_data.get("stone_price_e"),
                         row_data.get("final_price_e"),
                         row_data.get("updated_date_t"),
-                        row_data.get("additional_title")
+                        row_data.get("additional_title"),
+                        row_data.get("promotion_price")
                     ]
 
                     pg_cursor.execute(insert_query, values)
