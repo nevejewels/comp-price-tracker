@@ -64,6 +64,10 @@ class TheDiamondStoreScraper(BaseScraper):
             columns = ["product_url", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
             df_scraped = pd.DataFrame(rows, columns=columns)
 
+            for col in ["stone_carat"]:  # add more if needed
+                df_input[col] = pd.to_numeric(df_input[col], errors="coerce")
+                df_scraped[col] = pd.to_numeric(df_scraped[col], errors="coerce")
+
             # 6. Merge to find remaining rows
             df_merged = pd.merge(df_input, df_scraped, on=columns, how='left', indicator=True)
             df_remaining = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
@@ -238,11 +242,11 @@ class TheDiamondStoreScraper(BaseScraper):
                     row_data.get("variant_no"),
                     row_data.get("metal"),
                     row_data.get("stone_type"),
-                    row_data.get("stone_shape"),
-                    row_data.get("stone_carat"),
-                    row_data.get("color"),
-                    row_data.get("clarity"),
-                    row_data.get("cut"),
+                    # row_data.get("stone_shape"),
+                    # row_data.get("stone_carat"),
+                    # row_data.get("color"),
+                    # row_data.get("clarity"),
+                    # row_data.get("cut"),
                     row_data.get("product_title"),
                     row_data.get("metal_price"),
                     row_data.get("stone_price"),

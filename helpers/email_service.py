@@ -3,6 +3,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import traceback
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -42,12 +43,19 @@ def send_email(subject, body, is_error=False):
 def send_error_email(website_name, error, url=None, row_data=None):
     """Send an error notification email with details about the failure."""
     error_trace = traceback.format_exc()
-    subject = f"Scraper Error Alert - {website_name}"
+    today = datetime.now().strftime("%Y-%m-%d")  # Format: YYYY-MM-DD
+    subject = f"Scraper Error Alert - {today}"
+
+    # body = f"Error occurred during scraping for {website_name}:\n\n"
+    # body += f"Error: {str(error)}\n\n"
+    # body += f"Traceback:\n{error_trace}\n\n"
+
+    # Get only short error (1–2 lines)
+    short_error = "".join(traceback.format_exception_only(type(error), error)).strip()
 
     body = f"Error occurred during scraping for {website_name}:\n\n"
-    body += f"Error: {str(error)}\n\n"
-    body += f"Traceback:\n{error_trace}\n\n"
-    
+    body += f"Error: {short_error}\n\n"
+
     if url:
         body += f"Failed URL: {url}\n"
     if row_data:
@@ -57,7 +65,8 @@ def send_error_email(website_name, error, url=None, row_data=None):
 
 def send_completion_email(website_name, total_scraped, total_failed, execution_time, total_input_count, total_scraped_count):
     """Send a summary email when all scraping is complete."""
-    subject = f"Scraper Job Completed - {website_name}"
+    today = datetime.now().strftime("%Y-%m-%d")  # Format: YYYY-MM-DD
+    subject = f"Scraper Job Completed - {today}"
 
     body = f"Scraping job has completed for {website_name}.\n\n"
     body += f"Total input items: {total_input_count}\n"
