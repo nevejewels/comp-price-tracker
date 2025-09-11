@@ -1,21 +1,30 @@
+from selenium import webdriver
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options
 import time
-import logging
 
-# Configure the logger
-logging.basicConfig(
-    level=logging.INFO,  # You can change to DEBUG, WARNING, etc.
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("task.log"),  # Log to a file
-        logging.StreamHandler()           # Also print to console
-    ]
-)
+# Optional: set Firefox to run headless
+options = Options()
+options.binary_location = r"C:\Program Files\Mozilla Firefox\firefox.exe"
 
-logger = logging.getLogger(__name__)
+# options.add_argument("--headless")  # Uncomment to run in background
 
-logger.info("Start task")
+# Path to geckodriver (make sure it's installed and in PATH or provide full path)
+service = Service(r"C:\geckodriver\geckodriver.exe")
 
-for i in range(10):
-    logger.info(f"Task iteration {i + 1}")
-    # Simulate some work
-    time.sleep(1)
+# Initialize Firefox driver
+driver = webdriver.Firefox(service=service, options=options)
+
+try:
+    # Open a webpage
+    driver.get("https://www.python.org")
+
+    # Wait a bit for page load (not always needed but safe)
+    time.sleep(2)
+
+    # Get and print the title
+    print("Page Title:", driver.title)
+
+finally:
+    # Close the browser
+    driver.quit()

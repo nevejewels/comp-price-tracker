@@ -16,7 +16,31 @@ EMAIL_CONFIG = {
     'smtp_port': int(os.getenv('EMAIL_SMTP_PORT'))
 }
 
-def send_email(subject, body, is_error=False):
+# def send_email(subject, body, is_error=False):
+#     """Send email notification with the given subject and body."""
+#     try:
+#         msg = MIMEMultipart()
+#         msg['From'] = EMAIL_CONFIG['sender']
+#         msg['To'] = ", ".join(EMAIL_CONFIG['recipients'])
+#         msg['Subject'] = subject
+
+#         # Format error messages differently
+#         if is_error:
+#             body = f"🚨 ERROR ALERT 🚨\n\n{body}"
+#         else:
+#             body = f"✅ SCRAPER NOTIFICATION ✅\n\n{body}"
+
+#         msg.attach(MIMEText(body, 'plain'))
+
+#         with smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port']) as server:
+#             server.starttls()
+#             server.login(EMAIL_CONFIG['sender'], EMAIL_CONFIG['password'])
+#             server.send_message(msg)
+#     except Exception as e:
+#         print(f"Failed to send email: {e}")
+#         # Log this failure if you have a logging system
+
+def send_email(subject, body, is_error=False, is_html=False):
     """Send email notification with the given subject and body."""
     try:
         msg = MIMEMultipart()
@@ -24,21 +48,23 @@ def send_email(subject, body, is_error=False):
         msg['To'] = ", ".join(EMAIL_CONFIG['recipients'])
         msg['Subject'] = subject
 
-        # Format error messages differently
         if is_error:
-            body = f"🚨 ERROR ALERT 🚨\n\n{body}"
+            body = f"🚨 ERROR ALERT 🚨<br><br>{body}"
         else:
-            body = f"✅ SCRAPER NOTIFICATION ✅\n\n{body}"
+            body = f"✅ SCRAPER NOTIFICATION ✅<br><br>{body}"
 
-        msg.attach(MIMEText(body, 'plain'))
+        if is_html:
+            msg.attach(MIMEText(body, 'html'))
+        else:
+            msg.attach(MIMEText(body, 'plain'))
 
         with smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port']) as server:
             server.starttls()
             server.login(EMAIL_CONFIG['sender'], EMAIL_CONFIG['password'])
             server.send_message(msg)
     except Exception as e:
-        print(f"Failed to send email: {e}")
-        # Log this failure if you have a logging system
+        print(f"❌ Failed to send email: {e}")
+
 
 def send_error_email(website_name, error, url=None, row_data=None):
     """Send an error notification email with details about the failure."""
@@ -75,3 +101,11 @@ def send_completion_email(website_name, total_scraped, total_failed, execution_t
     body += f"Total items failed this session: {total_failed}\n"
     body += f"Total execution time this session: {execution_time}\n"
     send_email(subject, body)
+
+# website_name = "thediamondstore"
+# total_scraped = 17
+# total_failed = 0
+# execution_time = "03:23:65"
+# total_input_count = 17
+# total_scraped_count = 17
+# send_completion_email(website_name, total_scraped, total_failed, execution_time, total_input_count, total_scraped_count)

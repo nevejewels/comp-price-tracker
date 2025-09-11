@@ -94,6 +94,7 @@ class BrilliantearthScraper(BaseScraper):
                     print("row_data:", row_data)
 
                     url = row_data.get('product_url')
+                    # url = "https://www.brilliantearth.com/en-gb/jewelry/earrings/diamond/design-your-own-lab/1151787/"
                     metal = row_data.get('metal')
                     stone_type = row_data.get('stone_type')
                     stone_shape = row_data.get('stone_shape')
@@ -120,6 +121,12 @@ class BrilliantearthScraper(BaseScraper):
                     # Accept cookies if the prompt appears
                     accept_cookies(driver)
                     time.sleep(4)
+
+                    select_country_button = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.CLASS_NAME, "glSaveBtn"))
+                    )
+                    select_country_button.click()
+                    time.sleep(2)
 
                     # metal_val = "18K White Gold" # "18K Yellow Gold" "14K Rose Gold" "Platinum"
                     metal_val = metal
