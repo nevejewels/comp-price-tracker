@@ -122,11 +122,14 @@ class BrilliantearthScraper(BaseScraper):
                     accept_cookies(driver)
                     time.sleep(4)
 
-                    select_country_button = WebDriverWait(driver, 10).until(
-                        EC.element_to_be_clickable((By.CLASS_NAME, "glSaveBtn"))
-                    )
-                    select_country_button.click()
-                    time.sleep(2)
+                    try:
+                        select_country_button = WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable((By.CLASS_NAME, "glSaveBtn"))
+                        )
+                        select_country_button.click()
+                        time.sleep(2)
+                    except Exception as e:
+                        print(f"❌ Could not click country selection button: {e}")
 
                     # metal_val = "18K White Gold" # "18K Yellow Gold" "14K Rose Gold" "Platinum"
                     metal_val = metal

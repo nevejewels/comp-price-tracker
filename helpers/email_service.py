@@ -103,9 +103,9 @@ def send_completion_email(website_name, total_scraped, total_failed, execution_t
     send_email(subject, body)
 
 # website_name = "thediamondstore"
-# total_scraped = 17
+# total_scraped = 2
 # total_failed = 0
-# execution_time = "03:23:65"
+# execution_time = "00:43:13"
 # total_input_count = 17
-# total_scraped_count = 17
+# total_scraped_count = 2
 # send_completion_email(website_name, total_scraped, total_failed, execution_time, total_input_count, total_scraped_count)
