@@ -64,10 +64,10 @@ class BrilliantearthScraper(BaseScraper):
             df_input = pd.read_excel('files/brilliantearth/Brilliantearth_input_data_final.xlsx')
             self.logger.info(f"Total input rows: {len(df_input)}")
 
-            today_str = datetime.datetime.today().strftime('%Y-%m-%d')
-            # today_str1 = datetime.datetime.today()
-            # three_days_ago = today_str1 - datetime.timedelta(days=1)
-            # today_str = three_days_ago.strftime('%Y-%m-%d')
+            # today_str = datetime.datetime.today().strftime('%Y-%m-%d')
+            today_str1 = datetime.datetime.today()
+            three_days_ago = today_str1 - datetime.timedelta(days=1)
+            today_str = three_days_ago.strftime('%Y-%m-%d')
             self.logger.info("Today's date for scraping: %s", today_str)
 
             pg_cursor.execute("""
@@ -94,7 +94,7 @@ class BrilliantearthScraper(BaseScraper):
                     print("row_data:", row_data)
 
                     url = row_data.get('product_url')
-                    # url = "https://www.brilliantearth.com/en-gb/jewelry/earrings/diamond/design-your-own-lab/1151787/"
+                    url = "https://www.brilliantearth.com/en-gb/jewelry/earrings/diamond/design-your-own-lab/1151787/"
                     metal = row_data.get('metal')
                     stone_type = row_data.get('stone_type')
                     stone_shape = row_data.get('stone_shape')
@@ -234,10 +234,10 @@ class BrilliantearthScraper(BaseScraper):
                         metal_price = setting_price
                         print("Metal price is empty, setting to setting price = ", metal_price, setting_price)
 
-                    updated_date = time.strftime("%Y-%m-%d %H:%M:%S")
-                    # now = datetime.datetime.now()
-                    # three_days_ago = now - datetime.timedelta(days=1)
-                    # updated_date = three_days_ago.strftime("%Y-%m-%d %H:%M:%S")
+                    # updated_date = time.strftime("%Y-%m-%d %H:%M:%S")
+                    now = datetime.datetime.now()
+                    three_days_ago = now - datetime.timedelta(days=1)
+                    updated_date = three_days_ago.strftime("%Y-%m-%d %H:%M:%S")
                     print(f"Updated Date: {updated_date}")
 
                     row_data.update({
