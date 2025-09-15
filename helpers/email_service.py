@@ -12,6 +12,7 @@ EMAIL_CONFIG = {
     'sender': os.getenv('EMAIL_SENDER'),
     'password': os.getenv('EMAIL_PASSWORD'),
     'recipients': os.getenv('EMAIL_RECIPIENTS').split(','),
+    'recipients_report': os.getenv('EMAIL_RECIPIENTS_REPORT').split(','),
     'smtp_server': os.getenv('EMAIL_SMTP_SERVER'),
     'smtp_port': int(os.getenv('EMAIL_SMTP_PORT'))
 }
@@ -40,12 +41,17 @@ EMAIL_CONFIG = {
 #         print(f"Failed to send email: {e}")
 #         # Log this failure if you have a logging system
 
-def send_email(subject, body, is_error=False, is_html=False):
+def send_email(subject, body, recipients=None, is_error=False, is_html=False):
     """Send email notification with the given subject and body."""
     try:
         msg = MIMEMultipart()
         msg['From'] = EMAIL_CONFIG['sender']
-        msg['To'] = ", ".join(EMAIL_CONFIG['recipients'])
+        # msg['To'] = ", ".join(EMAIL_CONFIG['recipients'])
+        if recipients:
+            msg['To'] = ", ".join(recipients)
+        else:
+            msg['To'] = ", ".join(EMAIL_CONFIG['recipients'])
+
         msg['Subject'] = subject
 
         if is_error:
@@ -105,7 +111,7 @@ def send_completion_email(website_name, total_scraped, total_failed, execution_t
 # website_name = "thediamondstore"
 # total_scraped = 17
 # total_failed = 0
-# execution_time = "03:45:23"
+# execution_time = "04:12:43"
 # total_input_count = 17
 # total_scraped_count = 17
 # send_completion_email(website_name, total_scraped, total_failed, execution_time, total_input_count, total_scraped_count)

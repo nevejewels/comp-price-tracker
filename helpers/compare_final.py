@@ -3,6 +3,18 @@ from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 import re
 from email_service import send_email
+import os
+from dotenv import load_dotenv
+load_dotenv()
+EMAIL_CONFIG = {
+    'sender': os.getenv('EMAIL_SENDER'),
+    'password': os.getenv('EMAIL_PASSWORD'),
+    'recipients': os.getenv('EMAIL_RECIPIENTS').split(','),
+    'recipients_report': os.getenv('EMAIL_RECIPIENTS_REPORT').split(','),
+    'smtp_server': os.getenv('EMAIL_SMTP_SERVER'),
+    'smtp_port': int(os.getenv('EMAIL_SMTP_PORT'))
+}
+
 
 engine = create_engine("postgresql+psycopg2://briqpay:briqpay111@178.79.182.27/briqpay")
 
@@ -110,7 +122,7 @@ where a.updated_date_t >= '2025-07-02'
 # Load or fetch data for Report 1
 df1 = pd.read_sql(query1, engine)
 print(f"Total rows fetched: {df1.shape[0]}")
-df1.to_excel("yesterday_raw_data.xlsx", index=False)
+# df1.to_excel("yesterday_raw_data.xlsx", index=False)
 
 # df1 = pd.read_excel("yesterday_raw_data.xlsx")
 print(f"📊 Raw data shape: {df1.shape}")
@@ -238,7 +250,7 @@ ORDER BY website, collection_no, price_date;
 print("📊 Fetching Report 2 data from database...")
 df2 = pd.read_sql(query2, engine)
 print(f"Total rows fetched: {df2.shape[0]}")
-df2.to_excel("report2_last2days.xlsx", index=False)
+# df2.to_excel("report2_last2days.xlsx", index=False)
 
 # df2 = pd.read_excel("report2_last2days.xlsx")
 # print("📁 Loaded Report 2 data from Excel file")
@@ -406,41 +418,41 @@ def create_colored_html_table(df, title, report_type="report1"):
 html_table1 = create_colored_html_table(final_df1, "📊 Collection-wise Price Difference vs Competitors (% Δ)", "report1")
 html_table2 = create_colored_html_table(final_df2, "📈 Collection-wise Price Fluctuation (Yesterday vs Previous Day Avg)", "report2")
 
-# Save Report 1
-with open("report1.html", "w", encoding="utf-8") as f:
-    f.write(f"""
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Report 1</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        </style>
-    </head>
-    <body>
-        {html_table1}
-    </body>
-    </html>
-    """)
+# # Save Report 1
+# with open("report1.html", "w", encoding="utf-8") as f:
+#     f.write(f"""
+#     <html>
+#     <head>
+#         <meta charset="UTF-8">
+#         <title>Report 1</title>
+#         <style>
+#             body {{ font-family: Arial, sans-serif; margin: 20px; }}
+#         </style>
+#     </head>
+#     <body>
+#         {html_table1}
+#     </body>
+#     </html>
+#     """)
 
-# Save Report 2
-with open("report2.html", "w", encoding="utf-8") as f:
-    f.write(f"""
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Report 2</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        </style>
-    </head>
-    <body>
-        {html_table2}
-    </body>
-    </html>
-    """)
+# # Save Report 2
+# with open("report2.html", "w", encoding="utf-8") as f:
+#     f.write(f"""
+#     <html>
+#     <head>
+#         <meta charset="UTF-8">
+#         <title>Report 2</title>
+#         <style>
+#             body {{ font-family: Arial, sans-serif; margin: 20px; }}
+#         </style>
+#     </head>
+#     <body>
+#         {html_table2}
+#     </body>
+#     </html>
+#     """)
 
-print("✅ Reports saved as report1.html and report2.html. Open them in your browser.")
+# print("✅ Reports saved as report1.html and report2.html. Open them in your browser.")
 
 # Yesterday date for subject
 yesterday_date = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
@@ -585,20 +597,21 @@ body = f"""
 
 # Save processed data
 if not final_df1.empty:
-    final_df1.to_excel("yesterday_price_comparison.xlsx")
+    # final_df1.to_excel("yesterday_price_comparison.xlsx")
     print("💾 Saved Report 1 to yesterday_price_comparison.xlsx")
 else:
     print("⚠️ Report 1 empty - no Excel file saved")
     
 if not final_df2.empty:
-    final_df2.to_excel("report2_comparison.xlsx")
+    # final_df2.to_excel("report2_comparison.xlsx")
     print("💾 Saved Report 2 to report2_comparison.xlsx")
 else:
     print("⚠️ Report 2 empty - no Excel file saved")
 
 # Send email
 print("📧 Sending combined email report...")
-send_email(subject, body, is_html=True)
+# send_email(subject, body, is_html=True) 
+send_email(subject, body, recipients=EMAIL_CONFIG['recipients_report'], is_html=True)
 
 print("✅ Combined email sent successfully with both reports!")
 print("📊 Report 1: Competitor price comparison")
