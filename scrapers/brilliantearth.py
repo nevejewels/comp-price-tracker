@@ -94,7 +94,7 @@ class BrilliantearthScraper(BaseScraper):
                     print("row_data:", row_data)
 
                     url = row_data.get('product_url')
-                    url = "https://www.brilliantearth.com/en-gb/jewelry/earrings/diamond/design-your-own-lab/1151787/"
+                    # url = "https://www.brilliantearth.com/en-gb/jewelry/earrings/diamond/design-your-own-lab/1151787/"
                     metal = row_data.get('metal')
                     stone_type = row_data.get('stone_type')
                     stone_shape = row_data.get('stone_shape')
