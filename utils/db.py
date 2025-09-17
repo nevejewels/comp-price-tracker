@@ -11,6 +11,13 @@ try:
         user="briqpay",
         password="briqpay111"
     )
+    # pg_conn = psycopg2.connect(
+    #     host="localhost",
+    #     port=5433,
+    #     database="briqpay",
+    #     user="postgres",
+    #     password="postgres"
+    # )
     pg_conn.autocommit = True
     pg_cursor = pg_conn.cursor()
     print("PostgreSQL connection established successfully.")

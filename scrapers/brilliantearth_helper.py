@@ -35,7 +35,7 @@ def get_title_price(driver, logger):
 
         return title, price
     except Exception as e:
-        logger.error(f"Error extracting title: {e}")
+        logger.error(f"Error extracting title: {str(e.msg)}")
         return None, None
 
 def click_metal_option(driver, logger, metal_to_select):
@@ -107,7 +107,38 @@ def click_stonetype_diamond(driver, logger, origin_type):
         else:
             logger.warning(f"❌ Unknown diamond origin: {origin_type}")
     except Exception as e:
+        logger.error(f"❌ Error clicking diamond origin '{origin_type}': {str(e.msg)}")
+
+def click_stonetype_diamond1(driver, logger, origin_type):
+    origin_type = origin_type.strip().lower()
+
+    try:
+        # Expand Diamond Origin filter if collapsed
+        # origin_toggle = driver.find_element(By.CSS_SELECTOR, "a[href='#Diamond-Origin']")
+        # if origin_toggle.get_attribute("aria-expanded") == "false":
+        #     origin_toggle.click()
+        #     logger.info("🔽 Expanded 'Diamond Origin' filter.")
+
+        # Wait for links to appear
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#Diamond-Origin a"))
+        )
+
+        # Normalize input and decide target link
+        if "nat" in origin_type:   # matches "natural", "natural diamonds"
+            driver.find_element(By.LINK_TEXT, "Natural Diamonds").click()
+            logger.info("✅ Clicked on 'Natural Diamonds'.")
+        
+        elif "lab" in origin_type:  # matches "lab", "lab grown", "lab grown diamonds"
+            driver.find_element(By.LINK_TEXT, "Lab Grown Diamonds").click()
+            logger.info("✅ Clicked on 'Lab Grown Diamonds'.")
+        
+        else:
+            logger.warning(f"❌ Unknown diamond origin: {origin_type}")
+
+    except Exception as e:
         logger.error(f"❌ Error clicking diamond origin '{origin_type}': {e}")
+
 
 def set_carat_range(driver, logger, min_value="1.0", max_value="1.0"):
     try:

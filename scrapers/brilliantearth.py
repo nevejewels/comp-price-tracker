@@ -11,6 +11,7 @@ from helpers.email_service import send_error_email, send_completion_email
 from scrapers.brilliantearth_helper import (
     accept_cookies,
     click_stonetype_diamond,
+    click_stonetype_diamond1,
     click_first_select_diamond,
     click_style_option,
     click_metal_option,
@@ -29,16 +30,17 @@ from helpers.common_helper import (
     parse_numeric
 )
 import psycopg2
-
+from utils.db import pg_conn, pg_cursor
 from utils import logger
-pg_conn = psycopg2.connect(
-    host="178.79.182.27",
-    database="briqpay",
-    user="briqpay",
-    password="briqpay111"
-)
-pg_conn.autocommit = True
-pg_cursor = pg_conn.cursor()
+
+# pg_conn = psycopg2.connect(
+#     host="178.79.182.27",
+#     database="briqpay",
+#     user="briqpay",
+#     password="briqpay111"
+# )
+# pg_conn.autocommit = True
+# pg_cursor = pg_conn.cursor()
 
 
 class BrilliantearthScraper(BaseScraper):
@@ -95,8 +97,10 @@ class BrilliantearthScraper(BaseScraper):
 
                     url = row_data.get('product_url')
                     # url = "https://www.brilliantearth.com/en-gb/jewelry/earrings/diamond/design-your-own-lab/1151787/"
+                    # url = "https://www.brilliantearth.com/en-gb/1.4mm-Provence-Solitaire-Ring-Gold-BE1776-4345169/"
                     metal = row_data.get('metal')
                     stone_type = row_data.get('stone_type')
+                    # stone_type = "Lab Grown"
                     stone_shape = row_data.get('stone_shape')
                     stone_carat = row_data.get('stone_carat')
                     color = row_data.get('color')
@@ -148,9 +152,14 @@ class BrilliantearthScraper(BaseScraper):
                     time.sleep(1)
 
                     try:
+                        # product_details = WebDriverWait(driver, 10).until(
+                        #     EC.element_to_be_clickable((By.XPATH, "//a[span[text()='Product Details']]"))
+                        # )
                         product_details = WebDriverWait(driver, 10).until(
-                            EC.element_to_be_clickable((By.XPATH, "//a[span[text()='Product Details']]"))
+                            EC.element_to_be_clickable((By.CSS_SELECTOR, "a[href='#Details']"))
                         )
+                        product_details.click()
+
                         product_details.click()
                         print("**** Clicked Product Details successfully.")
                     except Exception as e:
@@ -169,6 +178,9 @@ class BrilliantearthScraper(BaseScraper):
                     except Exception as e:
                         self.logger.error(f"Failed to click 'CHOOSE THIS SETTING' button: {e}")
                     time.sleep(8)
+
+                    click_stonetype_diamond1(driver, self.logger, stone_type_val)
+                    time.sleep(5)
 
                     # stone_shape_value = "Round" # "Oval" "Emerald" "Cushion" "Elongated Cushion" "Radiant" "Princess" "Asscher"
                     stone_shape_value = stone_shape
@@ -254,7 +266,10 @@ class BrilliantearthScraper(BaseScraper):
                         "updated_date_t": today_str,
                         "additional_title": additional_title
                     })
-                    row_data["promotion_price"] = parse_numeric(row_data.get("promotion_price"))
+                    try:
+                        row_data["promotion_price"] = parse_numeric(row_data.get("promotion_price"))
+                    except:
+                        pass
 
                     for key, value in row_data.items():
                         if value in ["", "N/A"] or pd.isna(value):
