@@ -104,6 +104,7 @@ class BrilliantearthScraper(BaseScraper):
                     stone_shape = row_data.get('stone_shape')
                     stone_carat = row_data.get('stone_carat')
                     color = row_data.get('color')
+                    color_to = row_data.get('color_to')
                     clarity = row_data.get('clarity')
                     cut = row_data.get('cut')
 
@@ -113,6 +114,7 @@ class BrilliantearthScraper(BaseScraper):
                     self.logger.info(f"Scraping Stone Shape: {stone_shape}")
                     self.logger.info(f"Scraping Stone Carat: {stone_carat}")
                     self.logger.info(f"Scraping Color: {color}")
+                    self.logger.info(f"Scraping color_to: {color_to}")
                     self.logger.info(f"Scraping Clarity: {clarity}")
                     self.logger.info(f"Scraping Cut: {cut}")
 
@@ -198,7 +200,8 @@ class BrilliantearthScraper(BaseScraper):
 
 
                     color_val = color
-                    select_color(driver, self.logger, color_val)
+                    color_to_val = color_to
+                    select_color(driver, self.logger, color_val, color_to_val)
                     time.sleep(2)
 
 

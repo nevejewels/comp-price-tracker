@@ -196,7 +196,7 @@ def select_cut(driver, logger, cut_level):
         logger.error(f"❌ Failed to set cut level '{cut_level}' via JS: {e}")
 
 
-def select_color(driver, logger, color_value):
+def select_color(driver, logger, color_value, color_to_val):
     color_map = {
         "J": 0,
         "I": 1,
@@ -206,6 +206,10 @@ def select_color(driver, logger, color_value):
         "E": 5,
         "D": 6
     }
+    if color_to_val is None:
+        color_value = color_to_val
+    print("color_value = ", color_value)
+    print("color_to_val = ", color_to_val)
 
     color_value = color_value.strip().upper()
     if color_value not in color_map:
