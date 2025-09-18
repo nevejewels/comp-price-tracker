@@ -11,6 +11,8 @@ import datetime
 from datetime import timedelta
 import re
 import pandas as pd
+from helpers.email_service import EMAIL_CONFIG, send_email
+
 
 
 # =========================
@@ -298,3 +300,19 @@ if __name__ == "__main__":
         scrape_product_page(product_url)
 
     print("\n🎉 All done!")
+
+    # =========================
+    # Send Email Alert
+    # =========================
+    total_scraped = len(all_urls) - len(remaining_urls)
+    subject = f"Scraper Job Completed - {today_str}"
+    body = f"""
+    Scraping job has finished successfully.<br><br>
+    ✅ Total product URLs found: {len(all_urls)}<br>
+    📊 Already scraped in DB: {len(scraped_urls)}<br>
+    🆕 Newly scraped in this run: {len(remaining_urls)}<br>
+    📌 Date: {today_str}<br>
+    """
+
+    send_email(subject, body, recipients=EMAIL_CONFIG['recipients_report'], is_html=True)
+    print("📧 Completion email sent!")

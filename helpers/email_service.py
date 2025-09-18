@@ -13,6 +13,7 @@ EMAIL_CONFIG = {
     'password': os.getenv('EMAIL_PASSWORD'),
     'recipients': os.getenv('EMAIL_RECIPIENTS').split(','),
     'recipients_report': os.getenv('EMAIL_RECIPIENTS_REPORT').split(','),
+    'recipients_instock': os.getenv('EMAIL_RECIPIENTS_INSTOCK').split(','),
     'smtp_server': os.getenv('EMAIL_SMTP_SERVER'),
     'smtp_port': int(os.getenv('EMAIL_SMTP_PORT'))
 }
