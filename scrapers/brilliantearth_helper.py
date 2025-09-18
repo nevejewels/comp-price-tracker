@@ -196,7 +196,46 @@ def select_cut(driver, logger, cut_level):
         logger.error(f"❌ Failed to set cut level '{cut_level}' via JS: {e}")
 
 
-def select_color(driver, logger, color_value, color_to_val):
+# def select_color(driver, logger, color_value, color_to_val):
+#     color_map = {
+#         "J": 0,
+#         "I": 1,
+#         "H": 2,
+#         "G": 3,
+#         "F": 4,
+#         "E": 5,
+#         "D": 6
+#     }
+#     if color_to_val is None:
+#         color_to_val = color_value
+#     print("color_value = ", color_value)
+#     print("color_to_val = ", color_to_val)
+
+#     color_value = color_value.strip().upper()
+#     if color_value not in color_map:
+#         logger.error(f"❌ Invalid color '{color_value}'. Valid options: {list(color_map.keys())}")
+#         return
+
+#     try:
+#         # Scroll to slider
+#         slider = driver.find_element(By.ID, "js_color_slider")
+#         driver.execute_script("arguments[0].scrollIntoView(true);", slider)
+
+#         # Set both handles to the same index to isolate selection
+#         js_script = f"""
+#             let slider = document.getElementById('js_color_slider').noUiSlider;
+#             if (slider) {{
+#                 slider.set([{color_map[color_value]}, {color_map[color_value]}]);
+#             }}
+#         """
+#         driver.execute_script(js_script)
+
+#         logger.info(f"✅ Color '{color_value}' set successfully via JS.")
+#     except Exception as e:
+#         logger.error(f"❌ Failed to set color '{color_value}' via JS: {e}")
+
+
+def select_color(driver, logger, color_value, color_to_val=None):
     color_map = {
         "J": 0,
         "I": 1,
@@ -206,14 +245,19 @@ def select_color(driver, logger, color_value, color_to_val):
         "E": 5,
         "D": 6
     }
+
+    # Default: if no upper value provided, use the same as lower
     if color_to_val is None:
-        color_value = color_to_val
-    print("color_value = ", color_value)
-    print("color_to_val = ", color_to_val)
+        color_to_val = color_value
 
     color_value = color_value.strip().upper()
-    if color_value not in color_map:
-        logger.error(f"❌ Invalid color '{color_value}'. Valid options: {list(color_map.keys())}")
+    color_to_val = color_to_val.strip().upper()
+
+    if color_value not in color_map or color_to_val not in color_map:
+        logger.error(
+            f"❌ Invalid color(s) '{color_value}' - '{color_to_val}'. "
+            f"Valid options: {list(color_map.keys())}"
+        )
         return
 
     try:
@@ -221,18 +265,26 @@ def select_color(driver, logger, color_value, color_to_val):
         slider = driver.find_element(By.ID, "js_color_slider")
         driver.execute_script("arguments[0].scrollIntoView(true);", slider)
 
-        # Set both handles to the same index to isolate selection
+        # Get index values
+        min_val = color_map[color_value]
+        max_val = color_map[color_to_val]
+
+        # Ensure correct order (lower <= upper)
+        if min_val > max_val:
+            min_val, max_val = max_val, min_val
+
+        # Set both handles to cover the range
         js_script = f"""
             let slider = document.getElementById('js_color_slider').noUiSlider;
             if (slider) {{
-                slider.set([{color_map[color_value]}, {color_map[color_value]}]);
+                slider.set([{min_val}, {max_val}]);
             }}
         """
         driver.execute_script(js_script)
 
-        logger.info(f"✅ Color '{color_value}' set successfully via JS.")
+        logger.info(f"✅ Color range '{color_value}' → '{color_to_val}' set successfully.")
     except Exception as e:
-        logger.error(f"❌ Failed to set color '{color_value}' via JS: {e}")
+        logger.error(f"❌ Failed to set color range '{color_value}' - '{color_to_val}' via JS: {e}")
 
 
 def select_clarity(driver, logger, clarity_value):

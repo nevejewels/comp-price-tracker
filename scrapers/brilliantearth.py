@@ -108,6 +108,9 @@ class BrilliantearthScraper(BaseScraper):
                     clarity = row_data.get('clarity')
                     cut = row_data.get('cut')
 
+                    if pd.isna(color_to) or color_to is None:
+                        color_to = None
+
                     self.logger.info(f"Scraping URL: {url}")
                     self.logger.info(f"Scraping Metal: {metal}")
                     self.logger.info(f"Scraping Stone Type: {stone_type}")
