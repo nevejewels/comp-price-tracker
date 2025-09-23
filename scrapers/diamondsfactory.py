@@ -47,7 +47,7 @@ class DiamondsFactoryScraper(BaseScraper):
             print("🗓️ Today's date for scraping: ", today_str)
 
             pg_cursor.execute("""
-                SELECT product_url, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
+                SELECT product_url_final, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
                 FROM public.stg_price_df_scrape
                 WHERE updated_date_t = %s
             """, (today_str,))
@@ -55,7 +55,7 @@ class DiamondsFactoryScraper(BaseScraper):
             print(f"🛑 Total rows already scraped today: {len(rows)}")
 
             # 5. Convert DB result to DataFrame
-            columns = ["product_url", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
+            columns = ["product_url_final", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
             df_scraped = pd.DataFrame(rows, columns=columns)
             print(f"🛑 Already scraped rows today: {len(df_scraped)}")
 
@@ -68,7 +68,7 @@ class DiamondsFactoryScraper(BaseScraper):
             for index, row in df_remaining.iterrows():
                 try:
                     print("\n")
-                    url = row['product_url']
+                    url = row['product_url_final']
                     metal = row['metal']
                     stone_type = row['stone_type']
                     stone_shape = row['stone_shape']
@@ -180,7 +180,7 @@ class DiamondsFactoryScraper(BaseScraper):
 
                     insert_query = """
                         INSERT INTO public.stg_price_df_scrape (
-                            website, product_url, category, sub_category, collection_no, variant_no,
+                            website, product_url_final, category, sub_category, collection_no, variant_no,
                             metal, stone_type, stone_shape, stone_carat, color, clarity, cut,
                             product_title, metal_price, stone_price, final_price, updated_date,
                             setting_title, setting_price, diamond_title, product_description,
@@ -199,7 +199,7 @@ class DiamondsFactoryScraper(BaseScraper):
 
                     values = [
                         row_data.get("website"),
-                        row_data.get("product_url"),
+                        row_data.get("product_url_final"),
                         row_data.get("category"),
                         row_data.get("sub_category"),
                         row_data.get("collection_no"),

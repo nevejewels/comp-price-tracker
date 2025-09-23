@@ -18,6 +18,74 @@ def cookie_consent(driver):
     except Exception as e:
         print(f"❌ Could not click accept button: {e}")
 
+def cross_button1(driver):
+    try:
+        # Wait until the cross button is clickable and click it
+        cross_btn = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Close dialog']"))
+        )
+        cross_btn.click()
+        print("✅ Cross button clicked.")
+    except Exception as e:
+        print(f"❌ Could not click cross button: {e}")
+
+def cross_button2(driver):
+    try:
+        # Wait until the cross button is clickable and click it
+        cross_btn2 = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='dismiss-campaign-btn']"))
+        )
+        cross_btn2.click()
+        print("✅ Cross2 button clicked.")
+    except Exception as e:
+        print(f"❌ Could not click cross2 button: {e}")
+
+def chatbot_button(driver):
+    print("chatbot_button = ", chatbot_button)
+    try:
+        dismiss_btn = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-testid='dismiss-campaign-btn']"))
+        )
+        print("dismiss_btn = ", dismiss_btn)
+        
+        cross_btn2 = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='dismiss-campaign-btn']"))
+        )
+        print("cross_btn2 = ", cross_btn2)
+
+        cross_btn3 = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable(By.XPATH, "//button[@data-testid='dismiss-campaign-btn']")
+        )
+        print("cross_btn3 = ", cross_btn3)
+
+
+        dismiss_btn.click()
+        time.sleep(10)
+        print("clicked 1st time")
+        cross_btn2.click()
+        time.sleep(10)
+        print("clicked 2nd time")
+        cross_btn3.click()
+        time.sleep(10)
+        print("clicked 3rd time")
+        print("✅ Dismiss campaign button clicked")
+    except Exception as e:
+        print("ℹ️ No dismiss button found:", e)
+
+
+    # try:
+    #     # Wait until the chatbot button is clickable and click it
+    #     chatbot_btn = WebDriverWait(driver, 10).until(
+    #         EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Dismiss campaign']"))
+    #     )
+    #     print("chatbot_btn = ", chatbot_btn)
+
+    #     chatbot_btn.click()
+    #     print("✅ chatbot_btn button clicked.")
+    # except Exception as e:
+    #     print(f"❌ Could not click chatbot_btn button: {e}")
+
+
 def metal_click_view_button(driver, metal_name):
     """
     Clicks the VIEW button for the given metal type.
