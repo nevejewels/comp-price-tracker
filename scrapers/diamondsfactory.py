@@ -38,7 +38,7 @@ class DiamondsFactoryScraper(BaseScraper):
             self.driver.quit()
 
             df_input = pd.read_excel('files/diamondsfactory/diamondsfactory_input_final.xlsx', sheet_name='Sheet1_final')
-            self.logger.info(f"Total input rows: {len(df_input)}")
+            self.logger.info(f"Total input rows: {len(df_input)}, {df_input.shape}")
 
             today_str = datetime.datetime.today().strftime('%Y-%m-%d')
             # today_str1 = datetime.datetime.today()
@@ -47,7 +47,7 @@ class DiamondsFactoryScraper(BaseScraper):
             print("🗓️ Today's date for scraping: ", today_str)
 
             pg_cursor.execute("""
-                SELECT product_url_final, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
+                SELECT product_url, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
                 FROM public.stg_price_df_scrape
                 WHERE updated_date_t = %s
             """, (today_str,))
@@ -55,7 +55,7 @@ class DiamondsFactoryScraper(BaseScraper):
             print(f"🛑 Total rows already scraped today: {len(rows)}")
 
             # 5. Convert DB result to DataFrame
-            columns = ["product_url_final", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
+            columns = ["product_url", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
             df_scraped = pd.DataFrame(rows, columns=columns)
             print(f"🛑 Already scraped rows today: {len(df_scraped)}")
 
@@ -180,13 +180,13 @@ class DiamondsFactoryScraper(BaseScraper):
 
                     insert_query = """
                         INSERT INTO public.stg_price_df_scrape (
-                            website, product_url_final, category, sub_category, collection_no, variant_no,
+                            website, product_url, category, sub_category, collection_no, variant_no,
                             metal, stone_type, stone_shape, stone_carat, color, clarity, cut,
                             product_title, metal_price, stone_price, final_price, updated_date,
                             setting_title, setting_price, diamond_title, product_description,
                             additional_attributes, metal_price_e, stone_price_e, final_price_e,
                             updated_date_t, metal_t, stone_type_t, stone_shape_t,
-                            clarity_t, cut_t, promotion_price, rrp_price, you_save
+                            clarity_t, cut_t, promotion_price, rrp_price, you_save, product_url_old
                         ) VALUES (
                             %s, %s, %s, %s, %s, %s,
                             %s, %s, %s, %s, %s, %s, %s,
@@ -194,7 +194,7 @@ class DiamondsFactoryScraper(BaseScraper):
                             %s, %s, %s, %s,
                             %s, %s, %s, %s, 
                             %s, %s, %s, %s, 
-                            %s, %s, %s, %s, %s)
+                            %s, %s, %s, %s, %s, %s)
                     """
 
                     values = [
@@ -232,7 +232,8 @@ class DiamondsFactoryScraper(BaseScraper):
                         row_data.get("cut_t"),
                         row_data.get("promotion_price"),
                         row_data.get("rrp_price"),
-                        row_data.get("you_save")
+                        row_data.get("you_save"),
+                        row_data.get("product_url")
                     ]
 
                     pg_cursor.execute(insert_query, values)
