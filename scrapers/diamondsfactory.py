@@ -62,7 +62,7 @@ class DiamondsFactoryScraper(BaseScraper):
             # 6. Merge to find remaining rows
             df_merged = pd.merge(df_input, df_scraped, on=columns, how='left', indicator=True)
             print(df_merged.shape)
-            df_merged.to_excel(r"D:\and\aa.xlsx")
+            # df_merged.to_excel(r"D:\and\aa.xlsx")
             df_remaining = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
             print(f"✅ Remaining rows to scrape: {len(df_remaining)}")
 
