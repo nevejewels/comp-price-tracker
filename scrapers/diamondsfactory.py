@@ -47,7 +47,7 @@ class DiamondsFactoryScraper(BaseScraper):
             print("🗓️ Today's date for scraping: ", today_str)
 
             pg_cursor.execute("""
-                SELECT product_url, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
+                SELECT product_url, product_url1, category, sub_category, collection_no, metal, stone_type, stone_shape, stone_carat, color, clarity, cut
                 FROM public.stg_price_df_scrape
                 WHERE updated_date_t = %s
             """, (today_str,))
@@ -55,12 +55,14 @@ class DiamondsFactoryScraper(BaseScraper):
             print(f"🛑 Total rows already scraped today: {len(rows)}")
 
             # 5. Convert DB result to DataFrame
-            columns = ["product_url", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
+            columns = ["product_url", "product_url1", "category", "sub_category", "collection_no", "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity", "cut"]
             df_scraped = pd.DataFrame(rows, columns=columns)
             print(f"🛑 Already scraped rows today: {len(df_scraped)}")
 
             # 6. Merge to find remaining rows
             df_merged = pd.merge(df_input, df_scraped, on=columns, how='left', indicator=True)
+            print(df_merged.shape)
+            df_merged.to_excel(r"D:\and\aa.xlsx")
             df_remaining = df_merged[df_merged['_merge'] == 'left_only'].drop(columns=['_merge'])
             print(f"✅ Remaining rows to scrape: {len(df_remaining)}")
 
@@ -68,7 +70,7 @@ class DiamondsFactoryScraper(BaseScraper):
             for index, row in df_remaining.iterrows():
                 try:
                     print("\n")
-                    url = row['product_url_final']
+                    url = row['product_url']
                     metal = row['metal']
                     stone_type = row['stone_type']
                     stone_shape = row['stone_shape']
@@ -186,7 +188,7 @@ class DiamondsFactoryScraper(BaseScraper):
                             setting_title, setting_price, diamond_title, product_description,
                             additional_attributes, metal_price_e, stone_price_e, final_price_e,
                             updated_date_t, metal_t, stone_type_t, stone_shape_t,
-                            clarity_t, cut_t, promotion_price, rrp_price, you_save, product_url_old
+                            clarity_t, cut_t, promotion_price, rrp_price, you_save, product_url1
                         ) VALUES (
                             %s, %s, %s, %s, %s, %s,
                             %s, %s, %s, %s, %s, %s, %s,
@@ -199,7 +201,7 @@ class DiamondsFactoryScraper(BaseScraper):
 
                     values = [
                         row_data.get("website"),
-                        row_data.get("product_url_final"),
+                        row_data.get("product_url"),
                         row_data.get("category"),
                         row_data.get("sub_category"),
                         row_data.get("collection_no"),
@@ -233,7 +235,7 @@ class DiamondsFactoryScraper(BaseScraper):
                         row_data.get("promotion_price"),
                         row_data.get("rrp_price"),
                         row_data.get("you_save"),
-                        row_data.get("product_url")
+                        row_data.get("product_url1")
                     ]
 
                     pg_cursor.execute(insert_query, values)
