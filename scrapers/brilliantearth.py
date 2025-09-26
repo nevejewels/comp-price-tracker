@@ -1,6 +1,8 @@
 import datetime
 from datetime import timedelta
 import sys
+import re
+import os
 import pandas as pd
 from helpers.webdriver_manager import get_firefox_driver
 from scrapers.base_scraper import BaseScraper
@@ -95,6 +97,7 @@ class BrilliantearthScraper(BaseScraper):
                     row_data = row.to_dict()
                     print("row_data:", row_data)
 
+                    collection_no = row_data.get('collection_no')
                     url = row_data.get('product_url')
                     # url = "https://www.brilliantearth.com/en-gb/jewelry/earrings/diamond/design-your-own-lab/1151787/"
                     # url = "https://www.brilliantearth.com/en-gb/1.4mm-Provence-Solitaire-Ring-Gold-BE1776-4345169/"
@@ -282,6 +285,34 @@ class BrilliantearthScraper(BaseScraper):
                             row_data[key] = None
     
                     self.logger.info("row_data = %s", row_data)
+
+
+                    def sanitize_filename(name: str) -> str:
+                        """Remove spaces/special chars to make safe filenames"""
+                        return re.sub(r'[^A-Za-z0-9_-]', '_', name)
+
+                    # --- Create today's folder ---
+                    today_folder = datetime.datetime.today().strftime("%Y-%m-%d")
+                    base_dir = os.path.join("files", "brilliantearth", "snapshots", today_folder)
+                    os.makedirs(base_dir, exist_ok=True)  # ✅ Create if not exists
+
+                    # --- Build unique filename ---
+                    filename = f"{collection_no}_{metal}_{stone_type}"
+                    filename = sanitize_filename(filename)
+
+                    # --- Screenshot path ---
+                    screenshot_path = os.path.join(base_dir, f"{filename}.png")
+                    container = driver.find_element(By.CSS_SELECTOR, "div.js-pdp-sidebar")
+                    container.screenshot(screenshot_path)
+                    print(f"✅ Screenshot saved as {screenshot_path}")
+
+                    # --- HTML path ---
+                    html_path = os.path.join(base_dir, f"{filename}.html")
+                    container_html = container.get_attribute("outerHTML")
+                    with open(html_path, "w", encoding="utf-8") as f:
+                        f.write(container_html)
+                    print(f"✅ HTML snapshot saved as {html_path}")
+
 
                     insert_query = """
                         INSERT INTO public.stg_price_brilliantearth_scrape (
