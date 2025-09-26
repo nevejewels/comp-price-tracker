@@ -1,5 +1,7 @@
 import datetime
 from datetime import timedelta
+import os
+import re
 import sys
 import pandas as pd
 from helpers.email_service import send_error_email
@@ -70,6 +72,7 @@ class DiamondsFactoryScraper(BaseScraper):
             for index, row in df_remaining.iterrows():
                 try:
                     print("\n")
+                    collection_no = row['collection_no']
                     url = row['product_url']
                     metal = row['metal']
                     stone_type = row['stone_type']
@@ -179,6 +182,34 @@ class DiamondsFactoryScraper(BaseScraper):
                             row_data[key] = None
 
                     print("row_data = ", row_data)
+
+
+                    def sanitize_filename(name: str) -> str:
+                        """Remove spaces/special chars to make safe filenames"""
+                        return re.sub(r'[^A-Za-z0-9_-]', '_', name)
+
+                    # --- Create today's folder ---
+                    today_folder = datetime.datetime.today().strftime("%Y-%m-%d")
+                    base_dir = os.path.join("files", "diamondsfactory", "snapshots", today_folder)
+                    os.makedirs(base_dir, exist_ok=True)  # ✅ Create if not exists
+
+                    # --- Build unique filename ---
+                    filename = f"{collection_no}_{metal}_{stone_type}"
+                    filename = sanitize_filename(filename)
+
+                    # --- Screenshot path ---
+                    screenshot_path = os.path.join(base_dir, f"{filename}.png")
+                    container = driver.find_element(By.CSS_SELECTOR, "div.containerSticky")
+                    container.screenshot(screenshot_path)
+                    print(f"✅ Screenshot saved as {screenshot_path}")
+
+                    # --- HTML path ---
+                    html_path = os.path.join(base_dir, f"{filename}.html")
+                    container_html = container.get_attribute("outerHTML")
+                    with open(html_path, "w", encoding="utf-8") as f:
+                        f.write(container_html)
+                    print(f"✅ HTML snapshot saved as {html_path}")
+
 
                     insert_query = """
                         INSERT INTO public.stg_price_df_scrape (
