@@ -104,7 +104,7 @@ class TheDiamondStoreScraper(BaseScraper):
                 driver = get_firefox_driver(headless=False)
                 driver.get(url)
                 time.sleep(3)
-                driver.execute_script("document.body.style.zoom='40%'")
+                driver.execute_script("document.body.style.zoom='60%'")
                 time.sleep(3)
 
                 # driver.execute_script("document.body.style.zoom='80%'")
@@ -124,6 +124,8 @@ class TheDiamondStoreScraper(BaseScraper):
                 cross_button1(driver)
 
                 chatbot_button(driver)
+
+
 
                 # title = driver.find_element(By.CLASS_NAME, 'product-page-info__title').text
                 # print(f"Title: {title}")

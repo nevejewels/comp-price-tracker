@@ -43,34 +43,74 @@ def cross_button2(driver):
 def chatbot_button(driver):
     print("chatbot_button = ", chatbot_button)
     try:
-        dismiss_btn = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-testid='dismiss-campaign-btn']"))
-        )
-        print("dismiss_btn = ", dismiss_btn)
+        try:
+            dismiss_btn = WebDriverWait(driver, 2).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-testid='dismiss-campaign-btn']"))
+            )
+            dismiss_btn.click()
+            time.sleep(2)
+            print("dismiss_btn = ", dismiss_btn)
+        except Exception as e:
+            print(f"❌ Could not click dismiss button: {e}")
         
-        cross_btn2 = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='dismiss-campaign-btn']"))
-        )
-        print("cross_btn2 = ", cross_btn2)
+        try:
+            cross_btn2 = WebDriverWait(driver, 2).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='dismiss-campaign-btn']"))
+            )
+            cross_btn2.click()
+            time.sleep(2)
+            print("cross_btn2 = ", cross_btn2)
+        except Exception as e:
+            print(f"❌ Could not find cross_btn2 button: {e}")
 
-        cross_btn3 = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable(By.XPATH, "//button[@data-testid='dismiss-campaign-btn']")
-        )
-        print("cross_btn3 = ", cross_btn3)
+        try:
+            cross_btn3 = WebDriverWait(driver, 2).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='dismiss-campaign-btn']"))
+            )
+            print("cross_btn3 = ", cross_btn3)
+            cross_btn3.click()
+            time.sleep(2)
+            print("✅ Dismiss campaign button clicked")
+        except Exception as e:
+            print(f"❌ Could not find cross_btn3 button: {e}")
+
+        # Gorgias_button = WebDriverWait(driver, 10).until(
+        #     EC.element_to_be_clickable((By.ID, "gorgias-chat-messenger-button"))
+        # )
+        try:
+            # Gorgias_button = driver.find_element(By.ID, "gorgias-chat-messenger-button")
+            # print("Gorgias_button = ", Gorgias_button)
+            # Gorgias_button.click()
+            # print("✅ Gorgias chat button clicked.")
+
+            # Switch to iframe first (example)
+
+            # 1. Switch to the iframe
+            print("Switching to iframe...")
+            iframe = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "chat-button"))
+            )
+            driver.switch_to.frame(iframe)
+            print("Switched to iframe.")
+            
+            # 2. Wait for the button inside iframe to appear
+            Gorgias_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.ID, "gorgias-chat-messenger-button"))  # Replace with actual selector inside iframe
+            )
+            print("Gorgias_button = ", Gorgias_button)
+            Gorgias_button.click()
+            print("✅ Gorgias chat button clicked.")
+            
+            # 3. Switch back to main content
+            driver.switch_to.default_content()
 
 
-        dismiss_btn.click()
-        time.sleep(10)
-        print("clicked 1st time")
-        cross_btn2.click()
-        time.sleep(10)
-        print("clicked 2nd time")
-        cross_btn3.click()
-        time.sleep(10)
-        print("clicked 3rd time")
-        print("✅ Dismiss campaign button clicked")
+        except Exception as e:
+            print(f"❌ Could not click Gorgias button: {e}")
+
     except Exception as e:
         print("ℹ️ No dismiss button found:", e)
+
 
 
     # try:
