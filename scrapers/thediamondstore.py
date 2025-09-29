@@ -49,10 +49,10 @@ class TheDiamondStoreScraper(BaseScraper):
             df_input = pd.read_excel('files/thediamondstore/thediamondstore_input.xlsx')
             self.logger.info(f"Total input rows: {len(df_input)}")
 
-            # today_str = datetime.datetime.today().strftime('%Y-%m-%d')
-            today_str1 = datetime.datetime.today()
-            three_days_ago = today_str1 - datetime.timedelta(days=200)
-            today_str = three_days_ago.strftime('%Y-%m-%d')
+            today_str = datetime.datetime.today().strftime('%Y-%m-%d')
+            # today_str1 = datetime.datetime.today()
+            # three_days_ago = today_str1 - datetime.timedelta(days=200)
+            # today_str = three_days_ago.strftime('%Y-%m-%d')
             self.logger.info("Today's date for scraping: %s", today_str)
 
             pg_cursor.execute("""
@@ -221,10 +221,10 @@ class TheDiamondStoreScraper(BaseScraper):
 
 
 
-                # updated_date = time.strftime("%Y-%m-%d %H:%M:%S")
-                now = datetime.datetime.now()
-                three_days_ago = now - datetime.timedelta(days=200)
-                updated_date = three_days_ago.strftime("%Y-%m-%d %H:%M:%S")
+                updated_date = time.strftime("%Y-%m-%d %H:%M:%S")
+                # now = datetime.datetime.now()
+                # three_days_ago = now - datetime.timedelta(days=200)
+                # updated_date = three_days_ago.strftime("%Y-%m-%d %H:%M:%S")
                 print(f"Updated Date: {updated_date}")
 
                 row_data.update({
