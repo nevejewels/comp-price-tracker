@@ -170,12 +170,30 @@ class DiamondsFactoryScraper(BaseScraper):
                         # "detail_json": detail_json
                     })
 
-                    row_data["metal_price"] = parse_numeric(row_data.get("metal_price"))
-                    row_data["stone_price"] = parse_numeric(row_data.get("stone_price"))
-                    row_data["final_price"] = parse_numeric(row_data.get("final_price"))
-                    row_data["promotion_price"] = parse_numeric(row_data.get("promotion_price"))
-                    row_data["rrp_price"] = parse_numeric(row_data.get("rrp_price"))
-                    row_data["you_save"] = parse_numeric(row_data.get("you_save"))
+                    try:
+                        row_data["metal_price"] = parse_numeric(row_data.get("metal_price"))
+                    except:
+                        pass        
+                    try:            
+                        row_data["stone_price"] = parse_numeric(row_data.get("stone_price"))
+                    except:
+                        pass
+                    try:
+                        row_data["final_price"] = parse_numeric(row_data.get("final_price"))
+                    except:
+                        pass
+                    try:
+                        row_data["promotion_price"] = parse_numeric(row_data.get("promotion_price"))
+                    except:
+                        pass
+                    try:
+                        row_data["rrp_price"] = parse_numeric(row_data.get("rrp_price"))
+                    except:
+                        pass
+                    try:
+                        row_data["you_save"] = parse_numeric(row_data.get("you_save"))
+                    except:
+                        pass
 
                     for key, value in row_data.items():
                         if value in ["", "N/A"] or pd.isna(value):

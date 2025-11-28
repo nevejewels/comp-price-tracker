@@ -112,7 +112,7 @@ def send_completion_email(website_name, total_scraped, total_failed, execution_t
 # website_name = "thediamondstore"
 # total_scraped = 17
 # total_failed = 0
-# execution_time = "04:12:43"
+# execution_time = "04:34:12"
 # total_input_count = 17
 # total_scraped_count = 17
 # send_completion_email(website_name, total_scraped, total_failed, execution_time, total_input_count, total_scraped_count)

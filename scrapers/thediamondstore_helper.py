@@ -10,7 +10,7 @@ import re
 def cookie_consent(driver):
     try:
         # Wait until the Accept button is clickable and click it
-        accept_button = WebDriverWait(driver, 10).until(
+        accept_button = WebDriverWait(driver, 2).until(
             EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Accept']"))
         )
         accept_button.click()
@@ -21,7 +21,7 @@ def cookie_consent(driver):
 def cross_button1(driver):
     try:
         # Wait until the cross button is clickable and click it
-        cross_btn = WebDriverWait(driver, 10).until(
+        cross_btn = WebDriverWait(driver, 2).until(
             EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Close dialog']"))
         )
         cross_btn.click()
@@ -32,7 +32,7 @@ def cross_button1(driver):
 def cross_button2(driver):
     try:
         # Wait until the cross button is clickable and click it
-        cross_btn2 = WebDriverWait(driver, 10).until(
+        cross_btn2 = WebDriverWait(driver, 2).until(
             EC.element_to_be_clickable((By.XPATH, "//button[@data-testid='dismiss-campaign-btn']"))
         )
         cross_btn2.click()
@@ -265,3 +265,81 @@ def diamond_choices_button1(driver):
     diamond_choices_btn.click()
     print("clicked 2nd time")
     time.sleep(2)
+
+
+def extract_price_and_rrp(driver, parent_selector="span.price.price--sale", timeout=5):
+    """
+    Returns (price, rrp) as plain numeric strings (no currency symbols), or (None, None).
+    - price: sale price (NOW / current price). If missing, it will try to fall back to RRP.
+    - rrp: crossed-out price (line-through) when present.
+    """
+    def normalize_number(text):
+        if not text:
+            return None
+        cleaned = re.sub(r"[^\d.]", "", text)
+        return cleaned if cleaned != "" else None
+
+    try:
+        # wait for the price container
+        container = WebDriverWait(driver, timeout).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, parent_selector))
+        )
+    except Exception:
+        return None, None
+
+    # collect all span children under the price container
+    span_elems = container.find_elements(By.CSS_SELECTOR, "span")
+
+    sale_candidate = None
+    rrp_candidate = None
+
+    for el in span_elems:
+        text = (el.text or "").strip()
+        outer = (el.get_attribute("outerHTML") or "").lower()
+
+        # detect the rrp (line-through) first
+        # prefer explicit style attr containing 'line-through' or <s> or strike patterns
+        if "line-through" in outer or "text-decoration: line-through" in outer or "class=\"rrp_text\"" in outer:
+            if text and "rrp" not in text.lower():  # sometimes the line-through span contains the amount
+                rrp_candidate = text
+            else:
+                # if this element is just the 'RRP' label but has sibling line-through, we'll catch the line-through above
+                # continue searching
+                # but still set rrp if it has £ signs
+                if "£" in text or "$" in text or re.search(r"\d", text):
+                    rrp_candidate = text
+            continue
+
+        # skip plain 'RRP' label elements
+        if text.upper().strip() == "RRP" or text.lower().strip() == "rrp":
+            continue
+
+        # Prefer spans that include currency symbols or digits and are not the RRP label
+        if ("£" in text or "$" in text or re.search(r"\d", text)) and sale_candidate is None:
+            # ensure it's not styled as line-through in outerHTML
+            if "line-through" not in outer and "text-decoration: line-through" not in outer:
+                sale_candidate = text
+                # keep looking, but first match is fine
+    # If we didn't find rrp by style, try to find any remaining span with a currency and 'rrp' nearby
+    if not rrp_candidate:
+        # try to find a sibling that contains price with strike formatting or that looks like RRP followed by a money span
+        # fallback: any span with a currency and with strike-like markup in outerHTML
+        for el in span_elems:
+            outer = (el.get_attribute("outerHTML") or "").lower()
+            text = (el.text or "").strip()
+            if ("£" in text or "$" in text or re.search(r"\d", text)) and ("strike" in outer or "line-through" in outer or "text-decoration: line-through" in outer):
+                rrp_candidate = text
+                break
+
+    # Final fallback: if sale_candidate looks like "NOW £2,229", strip "NOW " prefix
+    if sale_candidate:
+        sale_candidate = re.sub(r"(?i)now[:\s]*", "", sale_candidate).strip()
+
+    # Normalize numbers
+    price_norm = normalize_number(sale_candidate)
+    rrp_norm = normalize_number(rrp_candidate)
+
+    # If price missing but rrp exists, you might consider using rrp as final_price depending on logic.
+    return price_norm, rrp_norm
+
+

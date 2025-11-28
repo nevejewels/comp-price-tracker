@@ -17,7 +17,8 @@ from scrapers.thediamondstore_helper import (
     diamond_choices_button1,
     cross_button1,
     cross_button2,
-    chatbot_button
+    chatbot_button,
+    extract_price_and_rrp
 )
 import time
 
@@ -193,28 +194,34 @@ class TheDiamondStoreScraper(BaseScraper):
                 # price = driver.find_element(By.CLASS_NAME, 'product-page-info__price').text
                 # print(f"Price: {price}")
 
-                # ---- Extract Price ----
-                # The main price is inside: <span class="price price--sale">
-                price_element = driver.find_element(By.CSS_SELECTOR, "span.price.price--sale span:nth-of-type(2)")
-                price_raw = price_element.text.strip()
+                # # ---- Extract Price ----
+                # # The main price is inside: <span class="price price--sale">
+                # price_element = driver.find_element(By.CSS_SELECTOR, "span.price.price--sale span:nth-of-type(2)")
+                # price_raw = price_element.text.strip()
 
-                # ---- Extract RRP Price ----
-                # The RRP is inside a <span> with text-decoration: line-through
-                rrp_element = driver.find_element(By.CSS_SELECTOR, "span.price.price--sale span[style*='line-through']")
-                rrp_price_raw = rrp_element.text.strip()
+                # # ---- Extract RRP Price ----
+                # # The RRP is inside a <span> with text-decoration: line-through
+                # rrp_element = driver.find_element(By.CSS_SELECTOR, "span.price.price--sale span[style*='line-through']")
+                # rrp_price_raw = rrp_element.text.strip()
 
-                print("price:", price_raw)
-                print("rrp_price:", rrp_price_raw)
+                # print("price:", price_raw)
+                # print("rrp_price:", rrp_price_raw)
 
-                try:
-                    price = re.sub(r"[^\d.]", "", price_raw)
-                except:
-                    price = price_raw
+                # try:
+                #     price = re.sub(r"[^\d.]", "", price_raw)
+                # except:
+                #     price = price_raw
 
-                try:
-                    rrp_price = re.sub(r"[^\d.]", "", rrp_price_raw)
-                except:
-                    rrp_price = rrp_price_raw
+                # try:
+                #     rrp_price = re.sub(r"[^\d.]", "", rrp_price_raw)
+                # except:
+                #     rrp_price = rrp_price_raw
+
+                # print("price:", price)
+                # print("rrp_price:", rrp_price)
+
+                # ---------- Usage (replace your old extraction lines) ----------
+                price, rrp_price = extract_price_and_rrp(driver)
 
                 print("price:", price)
                 print("rrp_price:", rrp_price)
@@ -231,6 +238,8 @@ class TheDiamondStoreScraper(BaseScraper):
                     "product_title": title,
                     "metal_price": price,
                     "final_price": rrp_price,
+                    "promotion_price": price,
+                    "rrp_price": rrp_price,
                     "updated_date": updated_date,
                     "updated_date_t": today_str,
                 })
@@ -241,56 +250,87 @@ class TheDiamondStoreScraper(BaseScraper):
 
                 self.logger.info("row_data = %s", row_data)
 
-                insert_query = """
-                    INSERT INTO public.stg_price_thediamondstore_scrape (
-                        website, product_url, category, sub_category, collection_no, variant_no,
-                        metal, stone_type, stone_shape, stone_carat, color, clarity, cut,
-                        product_title, metal_price, stone_price, final_price, updated_date,
-                        setting_title, setting_price, diamond_title, product_description,
-                        additional_attributes, metal_t, stone_type_t, stone_shape_t,
-                        clarity_t, cut_t, metal_price_e, stone_price_e, final_price_e,
-                        updated_date_t, additional_title
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """
+                # insert_query = """
+                #     INSERT INTO public.stg_price_thediamondstore_scrape (
+                #         website, product_url, category, sub_category, collection_no, variant_no,
+                #         metal, stone_type, stone_shape, stone_carat, color, clarity, 
+                #         cut, product_title, metal_price, stone_price, final_price, updated_date,
+                #         setting_title, setting_price, diamond_title, product_description, additional_attributes, metal_t, 
+                #         stone_type_t, stone_shape_t, clarity_t, cut_t, metal_price_e, stone_price_e, 
+                #         final_price_e, updated_date_t, additional_title, promotion_price, rrp_price, you_save
+                #     ) VALUES (  %s, %s, %s, %s, %s, %s, 
+                #                 %s, %s, %s, %s, %s, %s, 
+                #                 %s, %s, %s, %s, %s, %s,
+                #                 %s, %s, %s, %s, %s, %s, 
+                #                 %s, %s, %s, %s, %s, %s,
+                #                 %s, %s, %s, %s, %s, %s  
+                #             )
+                # """
 
-                values = [
-                    row_data.get("website"),
-                    row_data.get("product_url"),
-                    row_data.get("category"),
-                    row_data.get("sub_category"),
-                    row_data.get("collection_no"),
-                    row_data.get("variant_no"),
-                    row_data.get("metal"),
-                    row_data.get("stone_type"),
-                    # row_data.get("stone_shape"),
-                    # row_data.get("stone_carat"),
-                    # row_data.get("color"),
-                    # row_data.get("clarity"),
-                    # row_data.get("cut"),
-                    row_data.get("product_title"),
-                    row_data.get("metal_price"),
-                    row_data.get("stone_price"),
-                    row_data.get("final_price"),
-                    row_data.get("updated_date"),
-                    row_data.get("setting_title"),
-                    row_data.get("setting_price"),
-                    row_data.get("diamond_title"),
-                    row_data.get("product_description"),
-                    row_data.get("additional_attributes"),
-                    row_data.get("metal_t"),
-                    row_data.get("stone_type_t"),
-                    row_data.get("stone_shape_t"),
-                    row_data.get("clarity_t"),
-                    row_data.get("cut_t"),
-                    row_data.get("metal_price_e"),
-                    row_data.get("stone_price_e"),
-                    row_data.get("final_price_e"),
-                    row_data.get("updated_date_t"),
-                    row_data.get("additional_title")
+                # values = [
+                #     row_data.get("website"),
+                #     row_data.get("product_url"),
+                #     row_data.get("category"),
+                #     row_data.get("sub_category"),
+                #     row_data.get("collection_no"),
+                #     row_data.get("variant_no"),
+                #     row_data.get("metal"),
+                #     row_data.get("stone_type"),
+                #     # row_data.get("stone_shape"),
+                #     # row_data.get("stone_carat"),
+                #     # row_data.get("color"),
+                #     # row_data.get("clarity"),
+                #     # row_data.get("cut"),
+                #     row_data.get("product_title"),
+                #     row_data.get("metal_price"),
+                #     row_data.get("stone_price"),
+                #     row_data.get("final_price"),
+                #     row_data.get("updated_date"),
+                #     row_data.get("setting_title"),
+                #     row_data.get("setting_price"),
+                #     row_data.get("diamond_title"),
+                #     row_data.get("product_description"),
+                #     row_data.get("additional_attributes"),
+                #     row_data.get("metal_t"),
+                #     row_data.get("stone_type_t"),
+                #     row_data.get("stone_shape_t"),
+                #     row_data.get("clarity_t"),
+                #     row_data.get("cut_t"),
+                #     row_data.get("metal_price_e"),
+                #     row_data.get("stone_price_e"),
+                #     row_data.get("final_price_e"),
+                #     row_data.get("updated_date_t"),
+                #     row_data.get("additional_title")
+                # ]
+
+                # pg_cursor.execute(insert_query, values)
+
+                # ---- Safe DB insert: ensure columns and values match exactly ----
+                insert_cols = [
+                    "website", "product_url", "category", "sub_category", "collection_no", "variant_no",
+                    "metal", "stone_type", "stone_shape", "stone_carat", "color", "clarity",
+                    "cut", "product_title", "metal_price", "stone_price", "final_price", "updated_date",
+                    "setting_title", "setting_price", "diamond_title", "product_description", "additional_attributes",
+                    "metal_t", "stone_type_t", "stone_shape_t", "clarity_t", "cut_t",
+                    "metal_price_e", "stone_price_e", "final_price_e", "updated_date_t",
+                    "additional_title", "promotion_price", "rrp_price", "you_save"
                 ]
 
+                # Build values in same order as insert_cols
+                values = [row_data.get(col) for col in insert_cols]
+
+                # sanity check
+                if len(insert_cols) != len(values):
+                    raise RuntimeError(f"Column/value length mismatch: {len(insert_cols)} cols vs {len(values)} values")
+
+                placeholders = ", ".join(["%s"] * len(insert_cols))
+                insert_query = f"""
+                    INSERT INTO public.stg_price_thediamondstore_scrape ({', '.join(insert_cols)})
+                    VALUES ({placeholders})
+                """
+
                 pg_cursor.execute(insert_query, values)
+                self.logger.info(f"Inserted data into PostgreSQL for URL: {url}")
 
 
                 self.logger.info(f"Inserted data into PostgreSQL for URL: {url}")

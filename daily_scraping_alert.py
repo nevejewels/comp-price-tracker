@@ -5,7 +5,7 @@ from helpers.email_service import send_email
 # Expected records per website
 EXPECTED_COUNTS = {
     "Diamonds Factory": {"table": "stg_price_df_scrape", "count": 304},
-    "Brilliant Earth": {"table": "stg_price_brilliantearth_scrape", "count": 150},
+    "Brilliant Earth": {"table": "stg_price_brilliantearth_scrape", "count": 144},
     "The Diamond Store": {"table": "stg_price_thediamondstore_scrape", "count": 17},
     "77Diamonds": {"table": "stg_price_77diamonds_scrape", "count": 152},
     "Diamond Heaven": {"table": "stg_diamondheaven_price_scrape", "count": 104},

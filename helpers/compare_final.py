@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
 import re
@@ -292,19 +293,42 @@ if not df2.empty:
             y_val = pd.to_numeric(merged[yesterday_col], errors="coerce")
             d_val = pd.to_numeric(merged[daybefore_col], errors="coerce")
 
-            # % change
-            pct_change = ((y_val - d_val) / d_val * 100).round(0)
+            # New robust pct_change calculation:
+            with np.errstate(divide='ignore', invalid='ignore'):
+                raw_pct = (y_val - d_val) / d_val * 100
 
-            # Arrow logic
-            arrows = pct_change.apply(lambda x: "↑" if x > 0 else ("↓" if x < 0 else "→"))
+            # replace inf/-inf by NaN
+            raw_pct = raw_pct.replace([np.inf, -np.inf], np.nan)
 
-            # Format yesterday value + %change
+            # round where numeric
+            pct_change = raw_pct.round(0)
+
+            # Arrow logic (treat NaN as no-change arrow)
+            arrows = pct_change.apply(
+                lambda x: "↑" if pd.notna(x) and x > 0 else ("↓" if pd.notna(x) and x < 0 else "→")
+            )
+
+            # Format yesterday value + %change with robust NaN handling
             formatted = []
             for y, arrow, pct in zip(y_val, arrows, pct_change):
                 if pd.isna(y):  # no yesterday value → show "-"
                     formatted.append("-")
+                    continue
+
+                # y exists - format y as integer (rounded)
+                try:
+                    y_int = int(round(float(y)))
+                except Exception:
+                    # fallback if y can't be coerced
+                    y_int = y
+
+                if pd.isna(pct):
+                    # percent not computable (missing day-before or division by zero)
+                    formatted.append(f"{y_int} ({arrow}N/A)")
                 else:
-                    formatted.append(f"{int(y)} ({arrow}{int(pct)}%)")
+                    # safe to convert pct to int because it's numeric and rounded above
+                    formatted.append(f"{y_int} ({arrow}{int(pct)}%)")
+
 
             final_df2[col] = formatted
 

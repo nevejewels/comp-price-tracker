@@ -314,5 +314,5 @@ if __name__ == "__main__":
     📌 Date: {today_str}<br>
     """
 
-    send_email(subject, body, recipients=EMAIL_CONFIG['recipients_report'], is_html=True)
-    print("📧 Completion email sent!")
+    # send_email(subject, body, recipients=EMAIL_CONFIG['recipients_report'], is_html=True)
+    # print("📧 Completion email sent!")
